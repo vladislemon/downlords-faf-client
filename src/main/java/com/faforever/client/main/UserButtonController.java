@@ -1,10 +1,10 @@
 package com.faforever.client.main;
 
+import com.faforever.client.FafClientApplication;
 import com.faforever.client.chat.UserInfoWindowController;
 import com.faforever.client.fx.Controller;
 import com.faforever.client.player.PlayerService;
 import com.faforever.client.theme.UiService;
-import com.faforever.client.user.event.LogOutRequestEvent;
 import com.faforever.client.user.event.LoginSuccessEvent;
 import com.faforever.client.util.IdenticonUtil;
 import com.google.common.eventbus.EventBus;
@@ -16,6 +16,7 @@ import javafx.scene.control.MenuButton;
 import javafx.scene.image.ImageView;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
@@ -29,6 +30,7 @@ public class UserButtonController implements Controller<Node> {
   private final UiService uiService;
   public MenuButton userButtonRoot;
   public ImageView userImageView;
+  private final ApplicationContext applicationContext;
 
   public void initialize() {
     eventBus.register(this);
@@ -55,6 +57,6 @@ public class UserButtonController implements Controller<Node> {
   }
 
   public void onLogOut(ActionEvent actionEvent) {
-    eventBus.post(new LogOutRequestEvent());
+    FafClientApplication.restart();
   }
 }

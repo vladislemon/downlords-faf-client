@@ -3,13 +3,21 @@ package com.faforever.client;
 import com.faforever.client.config.ClientProperties;
 import com.faforever.client.fx.JavaFxUtil;
 import com.faforever.client.fx.PlatformService;
+import com.faforever.client.i18n.I18n;
 import com.faforever.client.main.MainController;
+import com.faforever.client.notification.Action;
+import com.faforever.client.notification.ImmediateNotification;
+import com.faforever.client.notification.NotificationService;
+import com.faforever.client.notification.Severity;
 import com.faforever.client.preferences.PreferencesService;
 import com.faforever.client.theme.UiService;
 import com.faforever.client.ui.StageHolder;
 import com.faforever.client.ui.taskbar.WindowsTaskbarProgressUpdater;
 import com.faforever.client.util.WindowsUtil;
 import com.github.nocatch.NoCatch.NoCatchRunnable;
+import com.install4j.api.launcher.ApplicationLauncher;
+import com.install4j.runtime.installer.config.InstallerConfig;
+import com.install4j.runtime.installer.helper.InstallerUtil;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.scene.control.Alert;
@@ -27,9 +35,11 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 
+import java.io.IOException;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Optional;
@@ -53,9 +63,12 @@ public class FafClientApplication extends Application {
   public static final String PROFILE_MAC = "mac";
   public static final int EXIT_STATUS_RAN_AS_ADMIN = 3;
 
-  private ConfigurableApplicationContext applicationContext;
+  private static String[] args;
+
+  private static ConfigurableApplicationContext applicationContext;
 
   public static void applicationMain(String[] args) {
+    FafClientApplication.args = args;
     PreferencesService.configureLogging();
     launch(args);
   }
@@ -120,15 +133,54 @@ public class FafClientApplication extends Application {
     controller.display();
   }
 
+  public static void restart() {
+    try {
+      InstallerConfig.getConfigFromFile(InstallerUtil.getInstallerFile("i4jparams.conf"));
+    } catch (IOException e) {
+      log.warn("The version you are running does not seem to support a restart.", e);
+      NotificationService notificationService = applicationContext.getBean(NotificationService.class);
+      I18n i18n = applicationContext.getBean(I18n.class);
+      notificationService.addNotification(
+          new ImmediateNotification(i18n.get("restart.warning.title"), i18n.get("restart.warning.message"), Severity.WARN,
+              Collections.singletonList(new Action(i18n.get("restart.warning.manual"), event -> Platform.exit())))
+      );
+      return;
+    }
+    Thread thread = new Thread(() -> {
+      try {
+        Platform.exit();
+        while (true) {
+          boolean terminating = Thread.getAllStackTraces().keySet().stream()
+              .filter(thread1 -> !thread1.equals(Thread.currentThread()))
+              .anyMatch(thread1 -> !thread1.isDaemon());
+          Thread.sleep(1000);
+          if (!terminating) {
+            break;
+          }
+        }
+        ApplicationLauncher.launchApplication("815", args, false, null);
+      } catch (Exception e) {
+        log.error("Failed to restart", e);
+      }
+    });
+
+    thread.setDaemon(false);
+    thread.start();
+  }
+
   @Override
   public void stop() throws Exception {
     applicationContext.close();
     super.stop();
 
+    assureShutDown();
+  }
+
+  private void assureShutDown() {
     Thread timeoutThread = new Thread(() -> {
       try {
         Thread.sleep(Duration.ofSeconds(30).toMillis());
-      } catch (InterruptedException e) {
+      } catch (InterruptedException ignored) {
       }
 
       Set<Entry<Thread, StackTraceElement[]>> threads = Thread.getAllStackTraces().entrySet();
@@ -146,7 +198,7 @@ public class FafClientApplication extends Application {
 
       try {
         Thread.sleep(Duration.ofSeconds(1).toMillis());
-      } catch (InterruptedException e) {
+      } catch (InterruptedException ignored) {
       }
 
       System.exit(-1);
