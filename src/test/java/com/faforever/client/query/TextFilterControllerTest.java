@@ -33,7 +33,7 @@ public class TextFilterControllerTest extends UITest {
 
   @BeforeEach
   public void setUp() throws Exception {
-    loadFxml("theme/vault/search/textFilter.fxml", clazz -> instance);
+    loadFxml("theme/vault/search/text_filter.fxml", clazz -> instance);
 
     instance.setPropertyName(propertyName);
   }

@@ -10,36 +10,30 @@
 <?import javafx.scene.layout.VBox?>
 <AnchorPane xmlns:fx="http://javafx.com/fxml/1" fx:id="chatRoot" xmlns="http://javafx.com/javafx/8.0.40"
             fx:controller="com.faforever.client.chat.ChatController">
-    <children>
-        <TabPane fx:id="tabPane" tabClosingPolicy="ALL_TABS" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0"
-                 AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
-            <Tab text="+" closable="false">
-                <VBox fx:id="noOpenTabsContainer" alignment="CENTER" fillWidth="false">
-                    <children>
-                        <Label styleClass="h2" text="%chat.joinAChannel">
-                            <padding>
-                                <Insets top="10.0"/>
-                                <Insets bottom="10.0"/>
-                            </padding>
-                        </Label>
-                        <TextField fx:id="channelNameTextField" onAction="#onJoinChannelButtonClicked"
-                                   promptText="%chat.channelNamePrompt"/>
-                    </children>
-                </VBox>
-            </Tab>
-        </TabPane>
-
-        <VBox fx:id="connectingProgressPane" alignment="CENTER" AnchorPane.bottomAnchor="0.0"
-              AnchorPane.leftAnchor="0.0"
-              AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
-            <children>
-                <ProgressIndicator prefHeight="80.0" prefWidth="80.0"/>
-                <Label text="%chat.connecting.message">
-                    <VBox.margin>
-                        <Insets bottom="28.0" top="14.0"/>
-                    </VBox.margin>
+    <TabPane fx:id="tabPane" tabClosingPolicy="ALL_TABS" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0"
+             AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+        <Tab text="+" closable="false">
+            <VBox fx:id="noOpenTabsContainer" alignment="CENTER" fillWidth="false">
+                <Label styleClass="h2" text="%chat.joinAChannel">
+                    <padding>
+                        <Insets top="10.0"/>
+                        <Insets bottom="10.0"/>
+                    </padding>
                 </Label>
-            </children>
-        </VBox>
-    </children>
+                <TextField fx:id="channelNameTextField" onAction="#onJoinChannelButtonClicked"
+                           promptText="%chat.channelNamePrompt"/>
+            </VBox>
+        </Tab>
+    </TabPane>
+
+    <VBox fx:id="connectingProgressPane" alignment="CENTER" AnchorPane.bottomAnchor="0.0"
+          AnchorPane.leftAnchor="0.0"
+          AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+        <ProgressIndicator prefHeight="80.0" prefWidth="80.0"/>
+        <Label text="%chat.connecting.message">
+            <VBox.margin>
+                <Insets bottom="28.0" top="14.0"/>
+            </VBox.margin>
+        </Label>
+    </VBox>
 </AnchorPane>

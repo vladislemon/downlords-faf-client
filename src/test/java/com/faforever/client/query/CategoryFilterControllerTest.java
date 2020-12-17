@@ -45,7 +45,7 @@ public class CategoryFilterControllerTest extends UITest {
     itemMap.put("1", items.get(0));
     itemMap.put("2", items.get(1));
 
-    loadFxml("theme/vault/search/categoryFilter.fxml", clazz -> instance);
+    loadFxml("theme/vault/search/category_filter.fxml", clazz -> instance);
 
     instance.setPropertyName(propertyName);
     instance.setItems(items);

@@ -46,7 +46,7 @@ public class DateRangeFilterControllerTest extends UITest {
 
   @BeforeEach
   public void setUp() throws Exception {
-    loadFxml("theme/vault/search/dateRangeFilter.fxml", clazz -> instance);
+    loadFxml("theme/vault/search/date_range_filter.fxml", clazz -> instance);
 
     instance.setPropertyName(propertyName);
   }

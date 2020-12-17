@@ -36,7 +36,7 @@ public class BinaryFilterControllerTest extends UITest {
 
   @BeforeEach
   public void setUp() throws Exception {
-    loadFxml("theme/vault/search/binaryFilter.fxml", clazz -> instance);
+    loadFxml("theme/vault/search/binary_filter.fxml", clazz -> instance);
 
     instance.setPropertyName(propertyName);
     instance.setOptions(firstLabel, firstValue, secondLabel, secondValue);

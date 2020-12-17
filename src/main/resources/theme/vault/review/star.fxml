@@ -5,8 +5,6 @@
 <StackPane xmlns:fx="http://javafx.com/fxml/1" styleClass="review-star" fx:id="starRoot" maxHeight="-Infinity"
            maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" onMouseClicked="#onMouseClicked"
            xmlns="http://javafx.com/javafx/8.0.111" fx:controller="com.faforever.client.vault.review.StarController">
-    <children>
-        <Region fx:id="starBackground" mouseTransparent="true" styleClass="icon,star-icon,review-star-background"/>
-        <Region fx:id="starFill" mouseTransparent="true" styleClass="icon,star-icon,review-star-fill"/>
-    </children>
+    <Region fx:id="starBackground" mouseTransparent="true" styleClass="icon,star-icon,review-star-background"/>
+    <Region fx:id="starFill" mouseTransparent="true" styleClass="icon,star-icon,review-star-fill"/>
 </StackPane>

@@ -41,7 +41,7 @@ public class RangeFilterControllerTest extends UITest {
 
   @BeforeEach
   public void setUp() throws Exception {
-    loadFxml("theme/vault/search/rangeFilter.fxml", clazz -> instance);
+    loadFxml("theme/vault/search/range_filter.fxml", clazz -> instance);
 
     instance.setPropertyName(propertyName);
     instance.setMin(min);

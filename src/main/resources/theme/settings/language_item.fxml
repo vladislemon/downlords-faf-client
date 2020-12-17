@@ -6,7 +6,6 @@
 <?import javafx.scene.layout.ColumnConstraints?>
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.RowConstraints?>
-
 <GridPane fx:id="languageItemRoot" hgap="10.0" onMouseClicked="#onSelected" styleClass="pointable,card"
           xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1"
           fx:controller="com.faforever.client.settings.LanguageItemController">
@@ -17,17 +16,15 @@
         <ColumnConstraints hgrow="ALWAYS" minWidth="10.0"/>
         <ColumnConstraints hgrow="NEVER" minWidth="10.0"/>
     </columnConstraints>
-    <children>
-        <Label fx:id="localLanguageLabel" styleClass="h3" text="&lt;Native Language&gt;"/>
-        <Label fx:id="translatedLanguageLabel" contentDisplay="RIGHT" text="&lt;Translated Language&gt;"
-               GridPane.columnIndex="1" GridPane.halignment="RIGHT">
-            <graphic>
-                <ImageView fx:id="localeImageView" fitHeight="20.0" fitWidth="40.0" pickOnBounds="true"
-                           preserveRatio="true"/>
-            </graphic>
-        </Label>
-    </children>
     <padding>
         <Insets bottom="10.0" left="10.0" right="10.0" top="10.0"/>
     </padding>
+    <Label fx:id="localLanguageLabel" styleClass="h3" text="&lt;Native Language&gt;"/>
+    <Label fx:id="translatedLanguageLabel" contentDisplay="RIGHT" text="&lt;Translated Language&gt;"
+           GridPane.columnIndex="1" GridPane.halignment="RIGHT">
+        <graphic>
+            <ImageView fx:id="localeImageView" fitHeight="20.0" fitWidth="40.0" pickOnBounds="true"
+                       preserveRatio="true"/>
+        </graphic>
+    </Label>
 </GridPane>

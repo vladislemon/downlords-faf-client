@@ -16,14 +16,12 @@
         <RowConstraints minHeight="10.0" vgrow="SOMETIMES"/>
         <RowConstraints minHeight="10.0" vgrow="SOMETIMES"/>
     </rowConstraints>
-    <children>
-        <ImageView fx:id="imageView" pickOnBounds="true" preserveRatio="true" styleClass="tutorial-item-image"
-                   fitHeight="50" fitWidth="50" GridPane.rowSpan="2"/>
-        <Label fx:id="titleLabel" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308"
-               styleClass="tutorial-item-title" text="&lt;Tutorial title&gt;" wrapText="true" GridPane.columnIndex="1"
-               GridPane.halignment="LEFT" GridPane.rowIndex="1" GridPane.valignment="TOP"/>
-        <Label fx:id="ordinalLabel" styleClass="tutorial-item-ordunal" text="&lt;123&gt;"
-               GridPane.columnIndex="1" GridPane.halignment="RIGHT" GridPane.valignment="TOP"/>
-    </children>
+    <ImageView fx:id="imageView" pickOnBounds="true" preserveRatio="true" styleClass="tutorial-item-image"
+               fitHeight="50" fitWidth="50" GridPane.rowSpan="2"/>
+    <Label fx:id="titleLabel" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308"
+           styleClass="tutorial-item-title" text="&lt;Tutorial title&gt;" wrapText="true" GridPane.columnIndex="1"
+           GridPane.halignment="LEFT" GridPane.rowIndex="1" GridPane.valignment="TOP"/>
+    <Label fx:id="ordinalLabel" styleClass="tutorial-item-ordunal" text="&lt;123&gt;"
+           GridPane.columnIndex="1" GridPane.halignment="RIGHT" GridPane.valignment="TOP"/>
 </GridPane>
 

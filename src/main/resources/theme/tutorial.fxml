@@ -19,21 +19,15 @@
         <Label text="%tutorial.noneAvailable"/>
     </VBox>
     <HBox fx:id="tutorialPane">
-        <children>
-            <ScrollPane fitToWidth="true" hbarPolicy="NEVER" minHeight="0.0" minWidth="0.0" HBox.hgrow="NEVER">
-                <content>
-                    <VBox fx:id="tutorialOverviewPane" minHeight="0.0" minWidth="0.0"/>
-                </content>
-            </ScrollPane>
-            <Separator orientation="VERTICAL"/>
-            <AnchorPane HBox.hgrow="ALWAYS">
-                <children>
-                    <fx:include source="tutorial_detail.fxml" fx:id="tutorialDetail" prefHeight="-1.0" prefWidth="-1.0"
-                                AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0"
-                                AnchorPane.topAnchor="0.0"/>
-                </children>
-            </AnchorPane>
-        </children>
+        <ScrollPane fitToWidth="true" hbarPolicy="NEVER" minHeight="0.0" minWidth="0.0" HBox.hgrow="NEVER">
+            <VBox fx:id="tutorialOverviewPane" minHeight="0.0" minWidth="0.0"/>
+        </ScrollPane>
+        <Separator orientation="VERTICAL"/>
+        <AnchorPane HBox.hgrow="ALWAYS">
+            <fx:include source="tutorial_detail.fxml" fx:id="tutorialDetail" prefHeight="-1.0" prefWidth="-1.0"
+                        AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0"
+                        AnchorPane.topAnchor="0.0"/>
+        </AnchorPane>
     </HBox>
 </StackPane>
 

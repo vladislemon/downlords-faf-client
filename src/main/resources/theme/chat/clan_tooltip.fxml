@@ -8,30 +8,28 @@
       fx:id="clanTooltipRoot"
       maxHeight="600" maxWidth="300" minHeight="-Infinity" minWidth="-Infinity"
       xmlns="http://javafx.com/javafx/8">
-    <children>
-        <Label text="%clan.clanName" underline="true">
-            <font>
-                <Font size="9.0"/>
-            </font>
-        </Label>
-        <Label fx:id="nameLabel"/>
-        <Label text="%clan.clanMembers" underline="true">
-            <font>
-                <Font size="9.0"/>
-            </font>
-        </Label>
-        <Label fx:id="membersLabel"/>
-        <Label fx:id="descriptionTitleLabel" text="%clan.description" underline="true">
-            <font>
-                <Font size="9.0"/>
-            </font>
-        </Label>
-        <Label fx:id="descriptionLabel" maxWidth="300" wrapText="true"/>
-        <Label text="%clan.leader" underline="true">
-            <font>
-                <Font size="9.0"/>
-            </font>
-        </Label>
-        <Label fx:id="leaderLabel"/>
-    </children>
+    <Label text="%clan.clanName" underline="true">
+        <font>
+            <Font size="9.0"/>
+        </font>
+    </Label>
+    <Label fx:id="nameLabel"/>
+    <Label text="%clan.clanMembers" underline="true">
+        <font>
+            <Font size="9.0"/>
+        </font>
+    </Label>
+    <Label fx:id="membersLabel"/>
+    <Label fx:id="descriptionTitleLabel" text="%clan.description" underline="true">
+        <font>
+            <Font size="9.0"/>
+        </font>
+    </Label>
+    <Label fx:id="descriptionLabel" maxWidth="300" wrapText="true"/>
+    <Label text="%clan.leader" underline="true">
+        <font>
+            <Font size="9.0"/>
+        </font>
+    </Label>
+    <Label fx:id="leaderLabel"/>
 </VBox>
