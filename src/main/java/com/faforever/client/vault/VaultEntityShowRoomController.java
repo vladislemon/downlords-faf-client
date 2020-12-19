@@ -1,7 +1,6 @@
 package com.faforever.client.vault;
 
 import com.faforever.client.fx.Controller;
-import javafx.fxml.FXML;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -19,14 +18,10 @@ import java.util.List;
 @Getter
 public class VaultEntityShowRoomController implements Controller<Node> {
 
-  @FXML
-  private Label label;
-  @FXML
-  private VBox root;
-  @FXML
-  private Button moreButton;
-  @FXML
-  private FlowPane pane;
+  public Label label;
+  public VBox root;
+  public Button moreButton;
+  public FlowPane pane;
 
   @Override
   public void initialize() {
