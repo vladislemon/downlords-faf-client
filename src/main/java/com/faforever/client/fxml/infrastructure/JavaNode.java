@@ -53,6 +53,10 @@ public class JavaNode {
         return Attributes;
     }
 
+    public void removeChild(JavaNode child) {
+        children.remove(child);
+    }
+
     public Boolean hasChildren() {
         return !children.isEmpty();
     }

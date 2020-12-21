@@ -5,6 +5,7 @@
  */
 package com.faforever.client.fxml.utils;
 
+import java.io.File;
 import java.util.Collection;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -91,5 +92,11 @@ public class StringUtils {
 
     public static String quote(String s) {
         return "\"" + s + "\"";
+    }
+
+    public static String fxmlFileToJavaClass(String fileName) {
+        File fileData = new File(fileName);
+        String className = StringUtils.substringBeforeLast(fileData.getName(), ".");
+        return "Fx" + StringUtils.snakeToCapitalize(className);
     }
 }

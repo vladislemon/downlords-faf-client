@@ -448,7 +448,7 @@ public class UiService implements InitializingBean, DisposableBean {
         parameters[i] = applicationContext.getBean(parameterTypes[i]);
       }
       try {
-        T controller = ((FxObject<T>) constructor.newInstance(parameters)).getController();
+        T controller = ((FxObject<T>) constructor.newInstance(parameters)).controller;
         log.debug("compiled fxml {} loaded successfully controller class is {}", relativePath, controller.getClass().getSimpleName());
         return controller;
       } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {

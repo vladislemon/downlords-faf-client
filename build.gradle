@@ -139,11 +139,18 @@ processResources {
   }
 }
 
+task cleanCompiledFXMLFiles(type: Delete) {
+  delete fileTree("src").matching {
+    include "**/fxml/compiled/*.java"
+  }
+}
+
 task compileFXML(type: JavaExec) {
   group = "Execution"
   description = "Run MainFXML to compile fxml"
   classpath = sourceSets.main.runtimeClasspath
   main = "com.faforever.client.fxml.MainFXML"
+  compileJava.dependsOn(cleanCompiledFXMLFiles)
 }
 
 configurations {

@@ -1,13 +1,11 @@
 package com.faforever.client.fxml;
 
-import com.faforever.client.fxml.model.reader.FxmlGenerator;
+import com.faforever.client.fxml.model.processor.FxmlProcessor;
 import com.faforever.client.fxml.utils.OsUtils;
-import com.faforever.client.fxml.utils.StringUtils;
 import javafx.application.Application;
 import javafx.stage.Stage;
 import org.springframework.util.ClassUtils;
 
-import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -41,7 +39,7 @@ public class MainApplication extends Application {
                 try {
                     if (file.endsWith(".fxml")) {
                         out.println("To compile: " + file);
-                        compile(file, MappedTypesToCreate);
+                        compile(Path.of(file), MappedTypesToCreate);
                         out.println("SUCCESS");
                     }
                 } catch (Exception e) {
@@ -62,7 +60,7 @@ public class MainApplication extends Application {
         Path fullFilePath = outPath.resolve("FXPreloader.java");
         StringBuilder stringBuilder = new StringBuilder();
 
-        String packageName = getPackageName(path);
+        String packageName = OsUtils.getPackageName(path);
         if (!OsUtils.isNullOrEmpty(packageName)) {
             stringBuilder.append("package ");
             stringBuilder.append("com.faforever.client.fxml");
@@ -85,41 +83,15 @@ public class MainApplication extends Application {
         OsUtils.writeAllText(fullFilePath, generatedCode);
     }
 
-    void compile(String file, List<String> mappedTypesToCreate) {
-        FxmlGenerator processor = new FxmlGenerator(file, outPath);
-        File fileData = new File(file);
-        String packageName = getPackageName(Path.of(fileData.getParent()));
-        String className = StringUtils.substringBeforeLast(fileData.getName(), ".");
+    void compile(Path filePath, List<String> mappedTypesToCreate) {
+        FxmlProcessor processor = new FxmlProcessor(filePath, "com.faforever.client.fxml.compiled");
 
-        String fxClassName = "Fx" + StringUtils.snakeToCapitalize(className);
-        processor.process(fxClassName, "com.faforever.client.fxml.compiled");
-        if (OsUtils.isNullOrEmpty(packageName)) {
-            mappedTypesToCreate.add(fxClassName.trim());
+        processor.generateJava(outPath);
+        if (OsUtils.isNullOrEmpty(processor.getPackageName())) {
+            mappedTypesToCreate.add(processor.getFxClassName().trim());
         } else {
-            mappedTypesToCreate.add(packageName + "." + fxClassName.trim());
+            mappedTypesToCreate.add(processor.getPackageName() + "." + processor.getFxClassName().trim());
         }
-    }
-
-    String getPackageName(Path path) {
-        String[] files = OsUtils.GetDirectoryFiles(path, false, file ->
-            (file.getName().endsWith(".java")
-                || file.getName().endsWith(".kt"))
-                && (!file.getName().startsWith("Fx"))
-        );
-
-        for (String file : files) {
-            List<String> lines = OsUtils.readAllLines(file);
-            for (String line : lines) {
-                String lineTrimmed = line.trim();
-                if (!lineTrimmed.startsWith("package")) {
-                    continue;
-                }
-                return StringUtils.removeSuffix(
-                    StringUtils.removePrefix(lineTrimmed, "package"),
-                    ";");
-            }
-        }
-        return "";
     }
 
     @Override

@@ -74,7 +74,7 @@ public class OsUtils {
         return str == null || str.length() == 0;
     }
 
-    public static Document readXmlPlain(String fileName) {
+    public static Document readXmlPlain(Path filePath) {
         Document dom = null;
         // Make an  instance of the DocumentBuilderFactory
         DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
@@ -84,7 +84,7 @@ public class OsUtils {
             DocumentBuilder db = dbf.newDocumentBuilder();
             // parse using the builder to get the DOM mapping of the
             // XML file
-            File file = new File(fileName);
+            File file = filePath.toFile();
             dom = db.parse(file);
 
         } catch (ParserConfigurationException | SAXException | IOException e) {
@@ -109,5 +109,27 @@ public class OsUtils {
         } catch (Exception ex) {
             return new ArrayList<>();
         }
+    }
+
+    public static String getPackageName(Path path) {
+        String[] files = OsUtils.GetDirectoryFiles(path, false, file ->
+            (file.getName().endsWith(".java")
+                || file.getName().endsWith(".kt"))
+                && (!file.getName().startsWith("Fx"))
+        );
+
+        for (String file : files) {
+            List<String> lines = OsUtils.readAllLines(file);
+            for (String line : lines) {
+                String lineTrimmed = line.trim();
+                if (!lineTrimmed.startsWith("package")) {
+                    continue;
+                }
+                return StringUtils.removeSuffix(
+                    StringUtils.removePrefix(lineTrimmed, "package"),
+                    ";");
+            }
+        }
+        return "";
     }
 }

@@ -2,17 +2,20 @@ package com.faforever.client.fxml.model;
 
 import com.faforever.client.fxml.infrastructure.JavaNode;
 import com.faforever.client.fxml.infrastructure.TypeCode;
+import com.faforever.client.fxml.model.processor.FxmlProcessor;
 import com.faforever.client.fxml.model.reflectutils.ConvertUtils;
 import com.faforever.client.fxml.utils.OsUtils;
-import com.faforever.client.fxml.utils.ReflectionResolver;
 import com.faforever.client.fxml.utils.StringUtils;
 import javafx.geometry.HPos;
 import javafx.geometry.Pos;
 import javafx.geometry.VPos;
 import javafx.scene.layout.Priority;
+import lombok.Data;
 
 import java.lang.reflect.Method;
+import java.nio.file.Path;
 import java.text.MessageFormat;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -26,7 +29,7 @@ import static com.faforever.client.fxml.utils.StringUtils.quote;
 import static java.lang.System.out;
 import static java.text.MessageFormat.format;
 
-
+@Data
 public class ControlFactory {
 
   public static final String FX_NODE_ID = "fx:id";
@@ -60,28 +63,19 @@ public class ControlFactory {
     specPropClass.put("column", Integer.class);
   }
 
-  private final String controllerType;
-  private final List<String> controlLines;
-  private final JavaNode rootNode;
-  private final ReflectionResolver resolver;
-  private final GeneratorConfiguration configuration;
+  private final FxmlProcessor fxmlProcessor;
+
+  private final List<String> controlLines = new ArrayList<>();
   private final Map<String, Integer> controlIndexMap = new HashMap<>();
 
-  public ControlFactory(String controllerType, List<String> buildControlsLines, JavaNode rootNode, ReflectionResolver resolver, GeneratorConfiguration configuration) {
-    this.controllerType = controllerType;
-    this.controlLines = buildControlsLines;
-    this.rootNode = rootNode;
-    this.resolver = resolver;
-    this.configuration = configuration;
-  }
-
-  public void process() {
-    setupControl(rootNode);
-    addCodeLine(format("view = {0};", rootNode.getControlName()));
+  public List<String> buildControl() {
+    setupControl(fxmlProcessor.getJavaNode());
+    addCodeLine(format("view = {0};", fxmlProcessor.getJavaNode().getControlName()));
+    return controlLines;
   }
 
   private void setupControl(JavaNode javaNode) {
-    resolver.resolve(javaNode);
+    fxmlProcessor.getResolver().resolve(javaNode);
     setControlName(javaNode);
     String controlName = javaNode.getControlName();
     String name = javaNode.getName();
@@ -96,7 +90,7 @@ public class ControlFactory {
     } else if (javaNode.getAttributes().containsKey(FX_VALUE)) {
       String value = javaNode.getAttributes().get(FX_VALUE);
       javaNode.setControlName(format("{0}.valueOf(\"{1}\")", name, value));
-    } else if (resolver.hasDefaultConstructor(javaNode)) {
+    } else if (fxmlProcessor.getResolver().hasDefaultConstructor(javaNode)) {
       addCodeLine(format("{0} {1} = new {2}()",
           name,
           controlName,
@@ -126,7 +120,7 @@ public class ControlFactory {
         continue;
       }
       if (!OsUtils.isNullOrEmpty(child.getInnerText())) {
-        String codeLine = handleSettingInnerText(resolver, parentClass, child, child.getInnerText(), parentControl);
+        String codeLine = handleSettingInnerText(fxmlProcessor.getResolver(), parentClass, child, child.getInnerText(), parentControl);
         addCodeLine(codeLine);
         continue;
       }
@@ -180,17 +174,15 @@ public class ControlFactory {
     String id = javaNode.extractAttribute(FX_NODE_ID);
     String controlName = javaNode.getControlName();
 
-    boolean isKotlin = configuration.isKotlinController;
-
     if (OsUtils.isNullOrEmpty(id)) {
       return;
     }
-    if (!controllerType.isBlank() && resolver.hasProperty(resolver.resolve(controllerType), controlName)) {
-      if (isKotlin) {
-        addCodeLine(format("controller.set{0}({1});", StringUtils.capitalize(id), controlName));
-      } else {
-        addCodeLine(format("controller.{0} = {1}", id, controlName));
-      }
+    if (fxmlProcessor.getControllerClass() != null && fxmlProcessor.getResolver().hasProperty(fxmlProcessor.getControllerClass(), controlName)) {
+      addCodeLine(format("controller.{0} = {1}", id, controlName));
+    } else if (fxmlProcessor.getControllerClass() == null) {
+      addCodeLine("if (controller != null) {");
+      addCodeLine(format("controller.{0} = {1}", id, controlName));
+      addCodeLine("}");
     }
   }
 
@@ -209,7 +201,7 @@ public class ControlFactory {
         if (staticMethodHandleAttribute(attr, controlName)) {
           continue;
         }
-        Method resolvedMethod = resolver.resolvePropertyMethod(controlClass, attrName, true);
+        Method resolvedMethod = fxmlProcessor.getResolver().resolvePropertyMethod(controlClass, attrName, true);
 
         if (resolvedMethod == null) {
           if (isNodeProperty(attrName)) {
@@ -238,14 +230,14 @@ public class ControlFactory {
     String className = itemsExpression[0];
     String staticMethodName = itemsExpression[1];
 
-    Class<?> clsResolved = resolver.resolve(className);
+    Class<?> clsResolved = fxmlProcessor.getResolver().resolve(className);
     if (clsResolved == null) {
       out.println("staticMethodHandleAttribute cannot resolve" + className);
       return false;
     }
 
-    Method setterMethod = resolver.resolveClassStaticSetter(clsResolved, staticMethodName);
-    resolver.FixedTypes.put(setterMethod.getParameterTypes()[1].getName(), setterMethod.getParameterTypes()[1]);
+    Method setterMethod = fxmlProcessor.getResolver().resolveClassStaticSetter(clsResolved, staticMethodName);
+    fxmlProcessor.getResolver().FixedTypes.put(setterMethod.getParameterTypes()[1].getName(), setterMethod.getParameterTypes()[1]);
     String parameterValue = prepareFunctionParam(attrValue, setterMethod.getParameterTypes()[1]);
     String codeLine = format("{0}.{1}({2}, {3})", className, setterMethod.getName(), controlName, parameterValue);
     addCodeLine(codeLine);
@@ -281,7 +273,7 @@ public class ControlFactory {
       case "BarChart" -> handleChart(javaNode);
       case "FXCollections" -> handleCollections(javaNode);
       case "Image" -> handleImage(javaNode);
-      case "fx:include" -> handleInclude(javaNode);
+      case FX_INCLUDE -> handleInclude(javaNode);
       default -> {
       }
     }
@@ -307,6 +299,10 @@ public class ControlFactory {
       }
       case "padding" -> {
         handlePadding(child);
+        return true;
+      }
+      case "Insets" -> {
+        handleInsets(child);
         return true;
       }
       default -> {
@@ -340,19 +336,7 @@ public class ControlFactory {
   }
 
   private void handleMargin(JavaNode marginWrapper) {
-    Map<String, Double> marginMap = new HashMap<>();
-    marginMap.put("top", 0.0);
-    marginMap.put("bottom", 0.0);
-    marginMap.put("left", 0.0);
-    marginMap.put("right", 0.0);
-    for (JavaNode inset : marginWrapper.getChildren()) {
-      Set<Entry<String, String>> attrs = inset.getAttributes().entrySet();
-      attrs.forEach(entry -> {
-        if (marginMap.containsKey(entry.getKey())) {
-          marginMap.put(entry.getKey(), Double.parseDouble(entry.getValue()));
-        }
-      });
-    }
+    Map<String, Double> marginMap = insetMapFromChildren(marginWrapper);
     String containerName = marginWrapper.getName().split("\\.")[0];
     String controlName = getControlName("Insets");
     String codeLine = format("Insets {0} = new Insets({1}, {2}, {3}, {4})", controlName,
@@ -364,19 +348,7 @@ public class ControlFactory {
   }
 
   private void handlePadding(JavaNode paddingWrapper) {
-    Map<String, Double> paddingMap = new HashMap<>();
-    paddingMap.put("top", 0.0);
-    paddingMap.put("bottom", 0.0);
-    paddingMap.put("left", 0.0);
-    paddingMap.put("right", 0.0);
-    for (JavaNode inset : paddingWrapper.getChildren()) {
-      Set<Entry<String, String>> attrs = inset.getAttributes().entrySet();
-      attrs.forEach(entry -> {
-        if (paddingMap.containsKey(entry.getKey())) {
-          paddingMap.put(entry.getKey(), Double.parseDouble(entry.getValue()));
-        }
-      });
-    }
+    Map<String, Double> paddingMap = insetMapFromChildren(paddingWrapper);
     String controlName = getControlName("Insets");
     String codeLine = format("Insets {0} = new Insets({1}, {2}, {3}, {4})", controlName,
         paddingMap.get("top"), paddingMap.get("right"), paddingMap.get("bottom"), paddingMap.get("left"));
@@ -384,6 +356,34 @@ public class ControlFactory {
     codeLine = format("{0}.setPadding({1})", paddingWrapper.getParent().getControlName(), controlName);
     addCodeLine(codeLine);
     addLineBreak();
+  }
+
+  private void handleInsets(JavaNode inset) {
+    Map<String, Double> paddingMap = insetMapFromChildren(inset.getParent());
+    String controlName = getControlName("Insets");
+    String codeLine = format("Insets {0} = new Insets({1}, {2}, {3}, {4})", controlName,
+        paddingMap.get("top"), paddingMap.get("right"), paddingMap.get("bottom"), paddingMap.get("left"));
+    addCodeLine(codeLine);
+    codeLine = format("{0}.setPadding({1})", inset.getParent().getControlName(), controlName);
+    addCodeLine(codeLine);
+    addLineBreak();
+  }
+
+  private Map<String, Double> insetMapFromChildren(JavaNode insetWrapper) {
+    Map<String, Double> insetMap = new HashMap<>();
+    insetMap.put("top", 0.0);
+    insetMap.put("bottom", 0.0);
+    insetMap.put("left", 0.0);
+    insetMap.put("right", 0.0);
+    for (JavaNode inset : insetWrapper.getChildren()) {
+      Set<Entry<String, String>> attrs = inset.getAttributes().entrySet();
+      attrs.forEach(entry -> {
+        if (insetMap.containsKey(entry.getKey())) {
+          insetMap.put(entry.getKey(), Double.parseDouble(entry.getValue()));
+        }
+      });
+    }
+    return insetMap;
   }
 
   private void handleSpinnerValueFactory(JavaNode spinnerValueFactory) {
@@ -407,7 +407,18 @@ public class ControlFactory {
   }
 
   private void handleInclude(JavaNode include) {
-    throw new UnsupportedOperationException("fx:include not supported");
+    setControlName(include);
+    String sourceFile = include.extractAttribute("source");
+    Path sourcePath;
+    if (sourceFile.startsWith("/")) {
+      throw new UnsupportedOperationException("Need Relative Path");
+    } else {
+      sourcePath = fxmlProcessor.getFilePath().getParent().resolve(sourceFile);
+    }
+    FxmlProcessor includeFxmlProcessor = new FxmlProcessor(sourcePath, "");
+    String fxObjectArgument = StringUtils.join(includeFxmlProcessor.getFxObjectParams().stream().map(fxObjectParam -> StringUtils.camelCase(fxObjectParam.getSimpleName())));
+    addCodeLine(format("{0} {1} = new {2}({3}).view", includeFxmlProcessor.getViewType(), include.getControlName(), includeFxmlProcessor.getFxClassName(), fxObjectArgument));
+    fxmlProcessor.getFxObjectParams().addAll(includeFxmlProcessor.getFxObjectParams());
   }
 
   private void addCodeLine(String codeLine) {
@@ -452,11 +463,11 @@ public class ControlFactory {
         return "\"" + attributeValue.replace("\"", "") + "\"";
       }
       case TypeCode.Enum -> {
-        resolver.FixedTypes.put(parameterType.getName(), parameterType);
+        fxmlProcessor.getResolver().FixedTypes.put(parameterType.getName(), parameterType);
         return ConvertUtils.computeEnumAttributeName(parameterType, attributeValue);
       }
       case TypeCode.Color -> {
-        resolver.FixedTypes.put(parameterType.getName(), parameterType);
+        fxmlProcessor.getResolver().FixedTypes.put(parameterType.getName(), parameterType);
         return ConvertUtils.computeColorAttributeName(parameterType, attributeValue);
       }
       case TypeCode.Object -> {
@@ -474,19 +485,18 @@ public class ControlFactory {
   private String handleObjectParam(String attributeValue, Class<?> parameterType) {
     switch (parameterType.getSimpleName()) {
       case "EventHandler" -> {
-        Class<?> controllerClass = resolver.resolve(controllerType);
-        if (controllerClass != null) {
-          Method method = resolver.getMethod(controllerClass, attributeValue.substring(1), 1);
+        if (fxmlProcessor.getControllerClass() != null) {
+          Method method = fxmlProcessor.getResolver().getMethod(fxmlProcessor.getControllerClass(), attributeValue.substring(1), 1);
           if (method != null) {
             Class<?> methodParameterType = method.getParameterTypes()[0];
-            resolver.FixedTypes.put(methodParameterType.getName(), methodParameterType);
+            fxmlProcessor.getResolver().FixedTypes.put(methodParameterType.getName(), methodParameterType);
             return format("event -> controller.{0}(({1}) event)", attributeValue.substring(1), methodParameterType.getSimpleName());
           }
         }
         return "event -> controller." + attributeValue.substring(1) + "()";
       }
       case "Duration" -> {
-        resolver.FixedTypes.put(parameterType.getName(), parameterType);
+        fxmlProcessor.getResolver().FixedTypes.put(parameterType.getName(), parameterType);
         return format("Duration.valueOf(\"{0}\")", attributeValue);
       }
       default -> {
@@ -507,7 +517,7 @@ public class ControlFactory {
   private Entry<String, Class<?>> findSpecProp(String attrName) {
     for (Entry<String, Class<?>> prop : specPropClass.entrySet()) {
       if (attrName.endsWith(prop.getKey())) {
-        resolver.FixedTypes.put(prop.getValue().getName(), prop.getValue());
+        fxmlProcessor.getResolver().FixedTypes.put(prop.getValue().getName(), prop.getValue());
         return prop;
       }
     }

@@ -105,6 +105,10 @@ public class ReflectionResolver {
       return FixedTypeNames.get(typeName);
     }
 
+    try {
+      return ClassLoader.getSystemClassLoader().loadClass(typeName);
+    } catch (ClassNotFoundException ignored) {
+    }
 
     for (String imprt : Imports) {
       String baseName = imprt + "." + typeName.replace(".", "$");
@@ -113,11 +117,8 @@ public class ReflectionResolver {
       } catch (ClassNotFoundException ignored) {
       }
     }
-    try {
-      return ClassLoader.getSystemClassLoader().loadClass(typeName);
-    } catch (ClassNotFoundException e) {
-      return null;
-    }
+
+    return null;
   }
 
   public Method getMethod(Class<?> clz, String name, int paramCount) {
