@@ -7,10 +7,10 @@ import com.faforever.client.fxml.model.XmlDocToJavaNode;
 import com.faforever.client.fxml.model.generator.CodeGenerator;
 import com.faforever.client.fxml.utils.OsUtils;
 import com.faforever.client.fxml.utils.ReflectionResolver;
-import javafx.fxml.Initializable;
 import javafx.util.Pair;
 import org.w3c.dom.Document;
 
+import java.lang.reflect.Method;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
@@ -62,6 +62,10 @@ public class FxmlGenerator {
         } else {
             throw new UnsupportedOperationException("Must have controller");
         }
+        codeGenerator.fxObjectParams = new ArrayList<>(codeGenerator.controllerParams);
+        if (!codeGenerator.fxObjectParams.contains(resolver.resolve("com.faforever.client.i18n.I18n"))) {
+            codeGenerator.fxObjectParams.add(resolver.resolve("com.faforever.client.i18n.I18n"));
+        }
         codeGenerator.viewType = javaNode.getName();
         javaNode.extractAttribute("xmlns:fx");
 
@@ -78,9 +82,9 @@ public class FxmlGenerator {
             return;
         }
         Class<?> controllerClass = resolver.resolve(codeGenerator.controllerType);
-        if (controllerClass == null || !Initializable.class.isAssignableFrom(controllerClass)) {
-            return;
+        Method initializeMethod = resolver.getMethod(controllerClass, "initialize", 0);
+        if (initializeMethod != null) {
+            codeGenerator.buildControlsLines.add("controller.initialize();");
         }
-        codeGenerator.buildControlsLines.add("controller.initialize(null, null);");
     }
 }

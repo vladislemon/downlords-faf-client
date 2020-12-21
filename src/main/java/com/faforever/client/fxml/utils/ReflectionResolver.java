@@ -110,7 +110,7 @@ public class ReflectionResolver {
       String baseName = imprt + "." + typeName.replace(".", "$");
       try {
         return ClassLoader.getSystemClassLoader().loadClass(baseName);
-      } catch (Exception ignored) {
+      } catch (ClassNotFoundException ignored) {
       }
     }
     try {
@@ -122,16 +122,16 @@ public class ReflectionResolver {
 
   public Method getMethod(Class<?> clz, String name, int paramCount) {
     Method[] methods = clz.getMethods();
-    for (Method mth : methods) {
+    for (Method method : methods) {
 
-      String methodName = mth.getName();
+      String methodName = method.getName();
       if (!methodName.equals(name)) {
         continue;
       }
 
-      int methodparameterCount = mth.getParameterCount();
+      int methodparameterCount = method.getParameterCount();
       if ((paramCount != -1) && (methodparameterCount == paramCount)) {
-        return mth;
+        return method;
 
       }
     }

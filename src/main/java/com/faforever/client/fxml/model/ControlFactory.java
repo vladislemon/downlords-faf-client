@@ -32,6 +32,7 @@ public class ControlFactory {
   public static final String FX_NODE_ID = "fx:id";
   public static final String FX_CONSTANT = "fx:constant";
   public static final String FX_INCLUDE = "fx:include";
+  public static final String FX_VALUE = "fx:value";
 
   public static final Set<String> SPECIAL_CONSTRUCTOR = Set.of("BarChart", "LineChart", "Image", "FXCollections", FX_INCLUDE);
   public static final Set<String> LIST_CHILDEREN = Set.of("children", "items", "rowConstraints", "columnConstraints",
@@ -92,6 +93,9 @@ public class ControlFactory {
     } else if (javaNode.getAttributes().containsKey(FX_CONSTANT)) {
       String value = javaNode.getAttributes().get(FX_CONSTANT);
       javaNode.setControlName(format("{0}.{1}", name, value));
+    } else if (javaNode.getAttributes().containsKey(FX_VALUE)) {
+      String value = javaNode.getAttributes().get(FX_VALUE);
+      javaNode.setControlName(format("{0}.valueOf(\"{1}\")", name, value));
     } else if (resolver.hasDefaultConstructor(javaNode)) {
       addCodeLine(format("{0} {1} = new {2}()",
           name,
@@ -313,13 +317,9 @@ public class ControlFactory {
 
   private void handleStyleClass(JavaNode child) {
     for (JavaNode childStyleRow : child.getChildren()) {
-      Map<String, String> attrs = childStyleRow.getAttributes();
-      for (Entry<String, String> attr : attrs.entrySet()) {
-        String attrValue = attr.getValue();
-        String codeLine = format("{0}.getStyleClass().add(\"{1}\")", child.getParent().getControlName(), attrValue);
-        addCodeLine(codeLine);
-        addLineBreak();
-      }
+      setupControl(childStyleRow);
+      String codeLine = format("{0}.getStyleClass().add({1})", child.getParent().getControlName(), childStyleRow.getControlName());
+      addCodeLine(codeLine);
     }
   }
 
@@ -445,6 +445,10 @@ public class ControlFactory {
     int typeCodeParameter = TypeCode.TypeNameToTypeCode(parameterType);
     switch (typeCodeParameter) {
       case TypeCode.String -> {
+        if (attributeValue.startsWith("%")) {
+
+          return format("i18n.get(\"{0}\")", attributeValue.substring(1));
+        }
         return "\"" + attributeValue.replace("\"", "") + "\"";
       }
       case TypeCode.Enum -> {

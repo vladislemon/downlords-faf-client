@@ -16,6 +16,7 @@ public class CodeGenerator {
     public String controllerType = "";
     public Constructor<?> controllerConstructor = null;
     public List<Class<?>> controllerParams = new ArrayList<>();
+    public List<Class<?>> fxObjectParams = new ArrayList<>();
 
     public String viewType = "";
 
@@ -53,9 +54,9 @@ public class CodeGenerator {
             appendln(".*;");
         }
 
-        for (Class<?> controllerParam : controllerParams) {
+        for (Class<?> fxObjectParam : fxObjectParams) {
             append("import ");
-            append(controllerParam.getName());
+            append(fxObjectParam.getName());
             appendln(";");
         }
 
@@ -85,14 +86,12 @@ public class CodeGenerator {
         append("\tpublic ");
         append(className);
         append("(");
-        if (!OsUtils.isNullOrEmpty(controllerType)) {
-            for (Class<?> controllerParam : controllerParams) {
-                append(controllerParam.getSimpleName());
-                append(" ");
-                append(StringUtils.camelCase(controllerParam.getSimpleName()));
-                if (controllerParams.indexOf(controllerParam) != controllerParams.size() - 1) {
-                    append(", ");
-                }
+        for (Class<?> fxObjectParam : fxObjectParams) {
+            append(fxObjectParam.getSimpleName());
+            append(" ");
+            append(StringUtils.camelCase(fxObjectParam.getSimpleName()));
+            if (fxObjectParams.indexOf(fxObjectParam) != fxObjectParams.size() - 1) {
+                append(", ");
             }
         }
         appendln(") {");
@@ -119,7 +118,6 @@ public class CodeGenerator {
                 appendln();
             }
         }
-        appendln("\t\tcontroller.initialize();");
         appendln("\t}");
 
         appendln("");
