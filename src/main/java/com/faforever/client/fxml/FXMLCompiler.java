@@ -16,8 +16,8 @@ import java.util.List;
 
 import static java.lang.System.out;
 
-public class MainApplication extends Application {
-    public Path outPath = Path.of("src", "main", "java", ClassUtils.classPackageAsResourcePath(MainApplication.class)).resolve("compiled");
+public class FXMLCompiler extends Application {
+    public Path outPath = Path.of("src", "main", "java", ClassUtils.classPackageAsResourcePath(FXMLCompiler.class)).resolve("compiled");
 
     public static void main(String[] args) {
         Application.launch();

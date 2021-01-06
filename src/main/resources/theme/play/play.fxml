@@ -8,7 +8,7 @@
     <TabPane fx:id="playRootTabPane" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308"
              tabClosingPolicy="UNAVAILABLE" VBox.vgrow="ALWAYS">
         <Tab fx:id="teamMatchmakingTab" text="%play.teamMatchmaking">
-            <fx:include source="team_matchmaking.fxml"fx:id="teamMatchmaking"/>
+            <fx:include source="team_matchmaking.fxml" fx:id="teamMatchmaking"/>
         </Tab>
         <Tab fx:id="customGamesTab" text="%play.custom">
             <fx:include fx:id="customGames" source="custom_games.fxml"/>
