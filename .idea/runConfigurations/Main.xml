@@ -10,6 +10,7 @@
       <option name="myExternalizedOptions" value="additional-options2=onexit\=snapshot,_no_java_version_check" />
     </RunnerSettings>
     <method v="2">
+      <option name="Gradle.BeforeRunTask" enabled="true" tasks="cleanCompiledFXMLFiles" externalProjectPath="$PROJECT_DIR$" vmOptions="" scriptParameters="" />
       <option name="Gradle.BeforeRunTask" enabled="true" tasks="compileFXML" externalProjectPath="$PROJECT_DIR$" vmOptions="" scriptParameters="" />
       <option name="Make" enabled="true" />
     </method>

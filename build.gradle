@@ -150,7 +150,6 @@ task compileFXML(type: JavaExec) {
   description = "Compile FXML"
   classpath = sourceSets.main.runtimeClasspath
   main = "com.faforever.client.fxml.CompileFXML"
-  compileJava.dependsOn(cleanCompiledFXMLFiles)
 }
 
 configurations {

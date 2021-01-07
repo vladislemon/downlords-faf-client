@@ -91,7 +91,7 @@ public class PlayerInfoWindowControllerTest extends UITest {
     when(i18n.get("leaderboard.rating", leaderboard.getTechnicalName())).thenReturn(leaderboard.getTechnicalName());
     when(i18n.get("leaderboard.gameNumber", leaderboard.getTechnicalName())).thenReturn(leaderboard.getTechnicalName());
     when(i18n.number(anyInt())).then(invocation -> invocation.getArgument(0).toString());
-    when(uiService.loadFxml("theme/achievement_item.fxml")).thenReturn(achievementItemController);
+    when(uiService.loadFxml("theme/achievements/achievement_item.fxml")).thenReturn(achievementItemController);
     when(achievementItemController.getRoot()).thenReturn(new HBox());
     when(uiService.loadFxml("theme/chat/player_rating_chart_tooltip.fxml")).thenReturn(playerRatingChartTooltipController);
     when(playerRatingChartTooltipController.getRoot()).thenReturn(new Pane());
@@ -111,7 +111,7 @@ public class PlayerInfoWindowControllerTest extends UITest {
     when(achievementService.getAchievementDefinitions()).thenReturn(CompletableFuture.completedFuture(singletonList(
         AchievementDefinitionBuilder.create().defaultValues().get()
     )));
-    when(uiService.loadFxml("theme/achievement_item.fxml")).thenReturn(achievementItemController);
+    when(uiService.loadFxml("theme/achievements/achievement_item.fxml")).thenReturn(achievementItemController);
     when(achievementService.getPlayerAchievements(player.getId())).thenReturn(CompletableFuture.completedFuture(
         singletonList(PlayerAchievementBuilder.create().defaultValues().get())
     ));
@@ -138,7 +138,7 @@ public class PlayerInfoWindowControllerTest extends UITest {
     when(achievementService.getAchievementDefinitions()).thenReturn(CompletableFuture.completedFuture(List.of(
         AchievementDefinitionBuilder.create().id("foo-bar").get()
     )));
-    when(uiService.loadFxml("theme/achievement_item.fxml")).thenReturn(achievementItemController);
+    when(uiService.loadFxml("theme/achievements/achievement_item.fxml")).thenReturn(achievementItemController);
     when(achievementService.getPlayerAchievements(player.getId())).thenReturn(CompletableFuture.completedFuture(List.of(
         PlayerAchievementBuilder.create().defaultValues().achievementId("foo-bar").state(AchievementState.UNLOCKED).get()
         )));

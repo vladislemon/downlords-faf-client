@@ -99,4 +99,10 @@ public class StringUtils {
         String className = StringUtils.substringBeforeLast(fileData.getName(), ".");
         return "Fx" + StringUtils.snakeToCapitalize(className);
     }
+
+    public static String fxmlFileToControllerClass(String fileName) {
+        File fileData = new File(fileName);
+        String className = StringUtils.substringBeforeLast(fileData.getName(), ".");
+        return StringUtils.snakeToCapitalize(className) + "Controller";
+    }
 }

@@ -1,6 +1,7 @@
 package com.faforever.client.fxml.utils;
 
 import com.faforever.client.fxml.infrastructure.JavaNode;
+import lombok.Getter;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
@@ -10,22 +11,23 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import static java.text.MessageFormat.format;
 
-
+@Getter
 public class ReflectionResolver {
 
-  public List<String> Imports = new ArrayList<>();
+  private final List<String> imports = new ArrayList<>();
 
-  public Map<String, Class<?>> FixedTypeNames = new HashMap<>();
-  public Map<String, Class<?>> FixedTypes = new HashMap<>();
+  private final Map<String, Class<?>> fixedTypeNames = new HashMap<>();
+  private final Map<String, Class<?>> fixedTypes = new HashMap<>();
 
-  public ReflectionResolver(List<String> imports) {
+  public ReflectionResolver(Set<String> imports) {
     for (String imprt : imports) {
       if (imprt.endsWith(".*")) {
-        String importSubstracted = imprt.substring(0, imprt.length() - 2);
-        Imports.add(importSubstracted);
+        String importSubtracted = imprt.substring(0, imprt.length() - 2);
+        this.imports.add(importSubtracted);
       } else {
         Class<?> clazz = null;
         try {
@@ -33,9 +35,9 @@ public class ReflectionResolver {
         } catch (ClassNotFoundException e) {
           e.printStackTrace();
         }
-        FixedTypes.put(imprt, clazz);
+        fixedTypes.put(imprt, clazz);
         String fixedTypeName = StringUtils.substringAfterLast(imprt, ".");
-        FixedTypeNames.put(fixedTypeName, clazz);
+        fixedTypeNames.put(fixedTypeName, clazz);
       }
     }
 
@@ -55,20 +57,12 @@ public class ReflectionResolver {
     return false;
   }
 
-  public Constructor<?> controllerConstructor(String baseName) {
-    try {
-      return firstPublicConstructor(ClassLoader.getSystemClassLoader().loadClass(baseName));
-    } catch (Exception ignored) {
-    }
-    return null;
-  }
-
   public Constructor<?> firstPublicConstructor(Class<?> clazz) {
     Constructor<?>[] allConstructors = clazz.getDeclaredConstructors();
-    for (Constructor<?> ctor : allConstructors) {
-      String modifierString = Modifier.toString(ctor.getModifiers());
+    for (Constructor<?> constructor : allConstructors) {
+      String modifierString = Modifier.toString(constructor.getModifiers());
       if (modifierString.contains("public")) {
-        return ctor;
+        return constructor;
       }
     }
     return null;
@@ -76,17 +70,17 @@ public class ReflectionResolver {
 
   public void resolve(JavaNode javaNode) {
     String typeName = javaNode.getName();
-    if (FixedTypes.containsKey(typeName)) {
-      javaNode.setClazz(FixedTypes.get(typeName));
+    if (fixedTypes.containsKey(typeName)) {
+      javaNode.setClazz(fixedTypes.get(typeName));
       return;
     }
-    if (FixedTypeNames.containsKey(typeName)) {
-      javaNode.setClazz(FixedTypeNames.get(typeName));
+    if (fixedTypeNames.containsKey(typeName)) {
+      javaNode.setClazz(fixedTypeNames.get(typeName));
       return;
     }
 
 
-    for (String imprt : Imports) {
+    for (String imprt : imports) {
       String baseName = imprt + "." + typeName.replace(".", "$");
       try {
         javaNode.setClazz(ClassLoader.getSystemClassLoader().loadClass(baseName));
@@ -98,11 +92,11 @@ public class ReflectionResolver {
   }
 
   public Class<?> resolve(String typeName) {
-    if (FixedTypes.containsKey(typeName)) {
-      return FixedTypes.get(typeName);
+    if (fixedTypes.containsKey(typeName)) {
+      return fixedTypes.get(typeName);
     }
-    if (FixedTypeNames.containsKey(typeName)) {
-      return FixedTypeNames.get(typeName);
+    if (fixedTypeNames.containsKey(typeName)) {
+      return fixedTypeNames.get(typeName);
     }
 
     try {
@@ -110,7 +104,7 @@ public class ReflectionResolver {
     } catch (ClassNotFoundException ignored) {
     }
 
-    for (String imprt : Imports) {
+    for (String imprt : imports) {
       String baseName = imprt + "." + typeName.replace(".", "$");
       try {
         return ClassLoader.getSystemClassLoader().loadClass(baseName);

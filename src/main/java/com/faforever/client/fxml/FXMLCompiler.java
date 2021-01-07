@@ -28,18 +28,18 @@ public class FXMLCompiler extends Application {
         Files.createDirectories(outPath);
         URL url = this.getClass().getClassLoader().getResource("theme");
         if (url != null) {
-            Path inPath = Path.of(url.toURI());
+            Path resourcePath = Path.of(url.toURI());
 
             boolean generatePreloader = false;
             int failed = 0;
-            String[] files = OsUtils.GetDirectoryFiles(inPath, true,
+            String[] files = OsUtils.GetDirectoryFiles(resourcePath, true,
                 file -> file.getName().endsWith(".fxml"));
             List<String> MappedTypesToCreate = new ArrayList<>();
             for (String file : files) {
                 try {
                     if (file.endsWith(".fxml")) {
                         out.println("To compile: " + file);
-                        compile(Path.of(file), MappedTypesToCreate);
+                        compile(Path.of(file), resourcePath, MappedTypesToCreate);
                         out.println("SUCCESS");
                     }
                 } catch (Exception e) {
@@ -49,7 +49,7 @@ public class FXMLCompiler extends Application {
                 }
             }
             if (generatePreloader) {
-                computePreloader(inPath, MappedTypesToCreate);
+                computePreloader(resourcePath, MappedTypesToCreate);
             }
             out.println(String.format("%d out of %d files compiled", files.length - failed, files.length));
         }
@@ -83,8 +83,8 @@ public class FXMLCompiler extends Application {
         OsUtils.writeAllText(fullFilePath, generatedCode);
     }
 
-    void compile(Path filePath, List<String> mappedTypesToCreate) {
-        FxmlProcessor processor = new FxmlProcessor(filePath, "com.faforever.client.fxml.compiled");
+    void compile(Path filePath, Path resourcePath, List<String> mappedTypesToCreate) {
+        FxmlProcessor processor = new FxmlProcessor(filePath, resourcePath, "com.faforever.client.fxml.compiled");
 
         processor.generateJava(outPath);
         if (OsUtils.isNullOrEmpty(processor.getPackageName())) {

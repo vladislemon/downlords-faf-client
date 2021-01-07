@@ -36,6 +36,7 @@ public class ControlFactory {
   public static final String FX_CONSTANT = "fx:constant";
   public static final String FX_INCLUDE = "fx:include";
   public static final String FX_VALUE = "fx:value";
+  public static final String FX_SOURCE = "source";
 
   public static final Set<String> SPECIAL_CONSTRUCTOR = Set.of("BarChart", "LineChart", "Image", "FXCollections", FX_INCLUDE);
   public static final Set<String> LIST_CHILDEREN = Set.of("children", "items", "rowConstraints", "columnConstraints",
@@ -149,9 +150,12 @@ public class ControlFactory {
   }
 
   private void setControlName(JavaNode javaNode) {
-    String name = javaNode.getName();
     String controlName = javaNode.Attributes.get(FX_NODE_ID);
     if (controlName == null) {
+      String name = javaNode.getName();
+      if (name.equals(FX_INCLUDE)) {
+        name = StringUtils.fxmlFileToJavaClass(javaNode.getAttributes().get(FX_SOURCE)).replace("Fx", "");
+      }
       if (!controlIndexMap.containsKey(name)) {
         controlIndexMap.put(name, 1);
       }
@@ -237,7 +241,7 @@ public class ControlFactory {
     }
 
     Method setterMethod = fxmlProcessor.getResolver().resolveClassStaticSetter(clsResolved, staticMethodName);
-    fxmlProcessor.getResolver().FixedTypes.put(setterMethod.getParameterTypes()[1].getName(), setterMethod.getParameterTypes()[1]);
+    fxmlProcessor.getResolver().getFixedTypes().put(setterMethod.getParameterTypes()[1].getName(), setterMethod.getParameterTypes()[1]);
     String parameterValue = prepareFunctionParam(attrValue, setterMethod.getParameterTypes()[1]);
     String codeLine = format("{0}.{1}({2}, {3})", className, setterMethod.getName(), controlName, parameterValue);
     addCodeLine(codeLine);
@@ -248,7 +252,7 @@ public class ControlFactory {
     String attrName = attr.getKey();
     String attrValue = attr.getValue();
     switch (attrName) {
-      case "xmlns" -> {
+      case "xmlns:fx", "xmlns" -> {
         return true;
       }
       case "stylesheets" -> {
@@ -408,17 +412,28 @@ public class ControlFactory {
 
   private void handleInclude(JavaNode include) {
     setControlName(include);
-    String sourceFile = include.extractAttribute("source");
+    String sourceFile = include.extractAttribute(FX_SOURCE);
     Path sourcePath;
     if (sourceFile.startsWith("/")) {
       throw new UnsupportedOperationException("Need Relative Path");
     } else {
       sourcePath = fxmlProcessor.getFilePath().getParent().resolve(sourceFile);
     }
-    FxmlProcessor includeFxmlProcessor = new FxmlProcessor(sourcePath, "");
+    FxmlProcessor includeFxmlProcessor = new FxmlProcessor(sourcePath, fxmlProcessor.getResourcePath(), "");
+    new ControlFactory(includeFxmlProcessor).buildControl();
+    String controllerClassName = includeFxmlProcessor.getFxClassName();
+    if (!controlIndexMap.containsKey(controllerClassName)) {
+      controlIndexMap.put(controllerClassName, 1);
+    }
+    String controllerName = format("{0}{1}", StringUtils.camelCase(controllerClassName), String.valueOf(controlIndexMap.get(controllerClassName)));
+    controlIndexMap.put(controllerClassName, controlIndexMap.get(controllerClassName) + 1);
     String fxObjectArgument = StringUtils.join(includeFxmlProcessor.getFxObjectParams().stream().map(fxObjectParam -> StringUtils.camelCase(fxObjectParam.getSimpleName())));
-    addCodeLine(format("{0} {1} = new {2}({3}).view", includeFxmlProcessor.getViewType(), include.getControlName(), includeFxmlProcessor.getFxClassName(), fxObjectArgument));
+    addCodeLine(format("{0} {1} = new {2}({3})", includeFxmlProcessor.getFxClassName(), controllerName, includeFxmlProcessor.getFxClassName(), fxObjectArgument));
+    addCodeLine(format("{0}.initialize()", controllerName));
+    addCodeLine(format("{0} {1} = {2}.view", includeFxmlProcessor.getViewType(), include.getControlName(), controllerName));
     fxmlProcessor.getFxObjectParams().addAll(includeFxmlProcessor.getFxObjectParams());
+    fxmlProcessor.getResolver().getFixedTypeNames().putAll(includeFxmlProcessor.getResolver().getFixedTypeNames());
+    fxmlProcessor.getResolver().getFixedTypes().putAll(includeFxmlProcessor.getResolver().getFixedTypes());
   }
 
   private void addCodeLine(String codeLine) {
@@ -463,11 +478,11 @@ public class ControlFactory {
         return "\"" + attributeValue.replace("\"", "") + "\"";
       }
       case TypeCode.Enum -> {
-        fxmlProcessor.getResolver().FixedTypes.put(parameterType.getName(), parameterType);
+        fxmlProcessor.getResolver().getFixedTypes().put(parameterType.getName(), parameterType);
         return ConvertUtils.computeEnumAttributeName(parameterType, attributeValue);
       }
       case TypeCode.Color -> {
-        fxmlProcessor.getResolver().FixedTypes.put(parameterType.getName(), parameterType);
+        fxmlProcessor.getResolver().getFixedTypes().put(parameterType.getName(), parameterType);
         return ConvertUtils.computeColorAttributeName(parameterType, attributeValue);
       }
       case TypeCode.Object -> {
@@ -489,14 +504,14 @@ public class ControlFactory {
           Method method = fxmlProcessor.getResolver().getMethod(fxmlProcessor.getControllerClass(), attributeValue.substring(1), 1);
           if (method != null) {
             Class<?> methodParameterType = method.getParameterTypes()[0];
-            fxmlProcessor.getResolver().FixedTypes.put(methodParameterType.getName(), methodParameterType);
+            fxmlProcessor.getResolver().getFixedTypes().put(methodParameterType.getName(), methodParameterType);
             return format("event -> controller.{0}(({1}) event)", attributeValue.substring(1), methodParameterType.getSimpleName());
           }
         }
         return "event -> controller." + attributeValue.substring(1) + "()";
       }
       case "Duration" -> {
-        fxmlProcessor.getResolver().FixedTypes.put(parameterType.getName(), parameterType);
+        fxmlProcessor.getResolver().getFixedTypes().put(parameterType.getName(), parameterType);
         return format("Duration.valueOf(\"{0}\")", attributeValue);
       }
       default -> {
@@ -517,7 +532,7 @@ public class ControlFactory {
   private Entry<String, Class<?>> findSpecProp(String attrName) {
     for (Entry<String, Class<?>> prop : specPropClass.entrySet()) {
       if (attrName.endsWith(prop.getKey())) {
-        fxmlProcessor.getResolver().FixedTypes.put(prop.getValue().getName(), prop.getValue());
+        fxmlProcessor.getResolver().getFixedTypes().put(prop.getValue().getName(), prop.getValue());
         return prop;
       }
     }

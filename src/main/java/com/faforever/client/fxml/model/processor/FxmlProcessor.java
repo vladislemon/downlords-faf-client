@@ -11,18 +11,24 @@ import javafx.util.Pair;
 import lombok.Data;
 import org.w3c.dom.Document;
 
+import java.io.File;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Modifier;
+import java.lang.reflect.TypeVariable;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
 @Data
 public class FxmlProcessor {
 
-  List<String> imports = new ArrayList<>();
+  Set<String> imports = new HashSet<>();
   Path filePath;
+  Path resourcePath;
   String fxClassName;
   String packageName;
   JavaNode javaNode;
@@ -30,17 +36,18 @@ public class FxmlProcessor {
   ReflectionResolver resolver;
   Class<?> controllerClass;
   Constructor<?> controllerConstructor;
-  List<Class<?>> controllerParams = new ArrayList<>();
-  Set<Class<?>> fxObjectParams = new HashSet<>();
-  List<String> staticImports = new ArrayList<>();
-  List<String> starImports = new ArrayList<>();
+  Set<Class<?>> controllerParams = new LinkedHashSet<>();
+  Set<Class<?>> fxObjectParams = new LinkedHashSet<>();
+  Set<String> staticImports = new HashSet<>();
+  Set<String> starImports = new HashSet<>();
   StringBuilder stringBuilder = new StringBuilder();
   List<String> buildControlsLines = new ArrayList<>();
   boolean initialize;
 
-  public FxmlProcessor(Path filePath, String packageName) {
+  public FxmlProcessor(Path filePath, Path resourcePath, String packageName) {
     Document doc = OsUtils.readXmlPlain(filePath);
     this.filePath = filePath;
+    this.resourcePath = resourcePath;
     this.packageName = packageName;
     fxClassName = StringUtils.fxmlFileToJavaClass(filePath.toString());
     XmlDocToJavaNode xmlDataTranslator = new XmlDocToJavaNode();
@@ -48,18 +55,28 @@ public class FxmlProcessor {
 
     resolver = new ReflectionResolver(imports);
     javaNode = result.getKey();
-    controllerClass = resolver.resolve(javaNode.extractAttribute("fx:controller"));
     viewType = javaNode.getName();
-    if (controllerClass != null) {
+    String controllerString = javaNode.extractAttribute("fx:controller");
+    if (!controllerString.isBlank()) {
+      controllerClass = resolver.resolve(controllerString);
       initialize = resolver.getMethod(controllerClass, "initialize", 0) != null;
       controllerConstructor = resolver.firstPublicConstructor(controllerClass);
       if (controllerConstructor != null) {
         controllerParams.addAll(List.of(controllerConstructor.getParameterTypes()));
       }
     } else {
-      staticImports.add("javafx.scene.Node");
+      Path relativePath = resourcePath.relativize(filePath);
+      if (relativePath.getNameCount() > 1) {
+        String potentialController = "com.faforever.client." +
+            relativePath.subpath(0, relativePath.getNameCount()).getParent().toString().replace(File.separatorChar, '.') + '.' +
+            StringUtils.fxmlFileToControllerClass(filePath.getFileName().toString());
+        controllerClass = resolver.resolve(potentialController);
+        initialize = resolver.getMethod(controllerClass, "initialize", 0) != null;
+      }
     }
-
+    if (controllerClass == null) {
+      throw new IllegalArgumentException("Fxml has no controller");
+    }
     fxObjectParams.addAll(controllerParams);
     fxObjectParams.add(resolver.resolve("com.faforever.client.i18n.I18n"));
   }
@@ -69,8 +86,8 @@ public class FxmlProcessor {
 
     ControlFactory builder = new ControlFactory(this);
     buildControlsLines.addAll(builder.buildControl());
-    starImports.addAll(resolver.Imports);
-    staticImports.addAll(resolver.FixedTypes.keySet());
+    starImports.addAll(resolver.getImports());
+    staticImports.addAll(resolver.getFixedTypes().keySet());
 
     Path fullFilePath = outPath.resolve(fxClassName + ".java");
     OsUtils.writeAllText(fullFilePath, generateCode());
@@ -127,11 +144,20 @@ public class FxmlProcessor {
 
   public void appendClass() {
     String controllerType = null;
+    String typeVariableString = null;
     if (controllerClass != null) {
       controllerType = controllerClass.getName();
+      TypeVariable<? extends Class<?>>[] typeVariables = controllerClass.getTypeParameters();
+      if (typeVariables != null && typeVariables.length > 0) {
+        typeVariableString = "<" + StringUtils.join(Arrays.stream(typeVariables).map(TypeVariable::getName)) + ">";
+        controllerType += typeVariableString;
+      }
     }
     append("public final class ");
     append(fxClassName);
+    if (typeVariableString != null) {
+      append(typeVariableString);
+    }
     append(" extends FxObject<");
     if (!OsUtils.isNullOrEmpty(controllerType)) {
       append(controllerType);
@@ -143,15 +169,11 @@ public class FxmlProcessor {
 
     appendln("");
 
-    if (!OsUtils.isNullOrEmpty(controllerType)) {
-      append("\tpublic ");
-      append(controllerType);
-      appendln(" controller;");
-    }
-
     append("\tpublic ");
     append(viewType);
     appendln(" view;");
+
+    fxObjectParams.forEach(fxObjectParam -> appendln("\tpublic " + fxObjectParam.getSimpleName() + " " + StringUtils.camelCase(fxObjectParam.getSimpleName()) + ";"));
 
     appendln("");
 
@@ -161,13 +183,23 @@ public class FxmlProcessor {
     append(StringUtils.join(fxObjectParams.stream().map(fxObjectParam ->
         fxObjectParam.getSimpleName() + " " + StringUtils.camelCase(fxObjectParam.getSimpleName()))));
     appendln(") {");
+    fxObjectParams.forEach(fxObjectParam -> {
+      String paramName = StringUtils.camelCase(fxObjectParam.getSimpleName());
+      appendln("\t\tthis." + paramName + " = " + paramName + ";");
+    });
+    appendln("}");
+    appendln("");
 
-    if (!OsUtils.isNullOrEmpty(controllerType)) {
-      append("\t\tcontroller = new ");
+    appendln("\tpublic void initialize() {");
+
+    if (!OsUtils.isNullOrEmpty(controllerType) && !Modifier.toString(controllerClass.getModifiers()).contains("abstract")) {
+      appendln("\t\tif (controller == null) {");
+      append("\t\t\tcontroller = new ");
       append(controllerType);
       append("(");
       append(StringUtils.join(controllerParams.stream().map(controllerParam -> StringUtils.camelCase(controllerParam.getSimpleName()))));
       appendln(");");
+      appendln("\t\t}");
     }
 
     for (String line : this.buildControlsLines) {
@@ -181,7 +213,7 @@ public class FxmlProcessor {
     }
 
     if (initialize) {
-      appendln("controller.initialize();");
+      appendln("\t\tcontroller.initialize();");
     }
 
     appendln("\t}");

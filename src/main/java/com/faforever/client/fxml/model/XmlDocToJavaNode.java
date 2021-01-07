@@ -7,11 +7,11 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
-import java.util.List;
+import java.util.Set;
 
 public class XmlDocToJavaNode {
 
-    public Pair<JavaNode, GeneratorConfiguration> buildNodeInfo(Document document, List<String> importsList) {
+    public Pair<JavaNode, GeneratorConfiguration> buildNodeInfo(Document document, Set<String> importsList) {
         Node firstChild = document.getFirstChild();
         processImports(firstChild, importsList);
 
@@ -64,7 +64,7 @@ public class XmlDocToJavaNode {
         return result;
     }
 
-    private void processImports(Node firstChild, List<String> importsList) {
+    private void processImports(Node firstChild, Set<String> importsList) {
         Node startNode = firstChild;
         while (startNode != null && "import".equals(startNode.getNodeName())) {
             importsList.add(startNode.getNodeValue());
