@@ -43,6 +43,8 @@ public interface ChatService {
 
   void close();
 
+  ConnectionState getConnectionState();
+
   ReadOnlyObjectProperty<ConnectionState> connectionStateProperty();
 
   void reconnect();

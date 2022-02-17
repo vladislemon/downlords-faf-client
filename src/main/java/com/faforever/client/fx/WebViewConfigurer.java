@@ -3,6 +3,7 @@ package com.faforever.client.fx;
 import com.faforever.client.config.ClientProperties;
 import com.faforever.client.preferences.PreferencesService;
 import com.faforever.client.theme.UiService;
+import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.concurrent.Worker.State;
 import javafx.event.EventHandler;
 import javafx.scene.input.KeyCode;
@@ -56,10 +57,12 @@ public class WebViewConfigurer {
     };
     webView.addEventHandler(MouseEvent.MOUSE_MOVED, moveHandler);
 
-    engine.setUserAgent(clientProperties.getUserAgent()); // removes faforever.com header and footer
+    // removes faforever.com header and footer
+    engine.setUserAgent(clientProperties.getUserAgent());
     uiService.registerWebView(webView);
-    JavaFxUtil.addListener(engine.getLoadWorker().stateProperty(), (observable, oldValue, newValue) -> {
-      if (newValue != State.SUCCEEDED) {
+    ReadOnlyObjectProperty<State> loaderStateProperty = engine.getLoadWorker().stateProperty();
+    JavaFxUtil.addListener(loaderStateProperty, observable -> {
+      if (loaderStateProperty.get()!= State.SUCCEEDED) {
         return;
       }
       uiService.registerWebView(webView);

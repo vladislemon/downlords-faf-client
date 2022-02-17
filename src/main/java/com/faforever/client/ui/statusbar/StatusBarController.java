@@ -55,8 +55,8 @@ public class StatusBarController implements Controller<Node> {
     setCurrentWorkerInStatusBar(null);
     versionLabel.setText(Version.getCurrentVersion());
 
-    JavaFxUtil.addListener(userService.connectionStateProperty(), (observable, oldValue, newValue) -> JavaFxUtil.runLater(() -> {
-      switch (newValue) {
+    JavaFxUtil.addListener(userService.connectionStateProperty(), observable -> JavaFxUtil.runLater(() -> {
+      switch (userService.getConnectionState()) {
         case DISCONNECTED -> {
           fafConnectionButton.setText(i18n.get("statusBar.fafDisconnected"));
           fafConnectionStatusIcon.pseudoClassStateChanged(CONNECTIVITY_CONNECTED_PSEUDO_CLASS, false);
@@ -75,10 +75,10 @@ public class StatusBarController implements Controller<Node> {
       }
     }));
 
-    JavaFxUtil.addListener(chatService.connectionStateProperty(), (observable, oldValue, newValue) -> JavaFxUtil.runLater(() -> {
+    JavaFxUtil.addListener(chatService.connectionStateProperty(), observable -> JavaFxUtil.runLater(() -> {
       chatConnectionStatusIcon.pseudoClassStateChanged(CONNECTIVITY_CONNECTED_PSEUDO_CLASS, false);
       chatConnectionStatusIcon.pseudoClassStateChanged(CONNECTIVITY_DISCONNECTED_PSEUDO_CLASS, false);
-      switch (newValue) {
+      switch (chatService.getConnectionState()) {
         case DISCONNECTED -> {
           chatConnectionButton.setText(i18n.get("statusBar.chatDisconnected"));
           chatConnectionStatusIcon.pseudoClassStateChanged(CONNECTIVITY_DISCONNECTED_PSEUDO_CLASS, true);

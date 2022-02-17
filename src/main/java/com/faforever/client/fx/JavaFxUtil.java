@@ -1,7 +1,5 @@
 package com.faforever.client.fx;
 
-import com.faforever.client.fx.contextmenu.ContextMenuBuilder;
-import com.faforever.client.fx.contextmenu.CopyLabelMenuItem;
 import com.google.common.base.Strings;
 import com.sun.javafx.stage.PopupWindowHelper;
 import com.sun.jna.Pointer;
@@ -27,7 +25,6 @@ import javafx.embed.swing.SwingFXUtils;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.Node;
 import javafx.scene.Parent;
-import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextField;
 import javafx.scene.control.Tooltip;
@@ -40,7 +37,6 @@ import javafx.util.Duration;
 import javafx.util.StringConverter;
 import javafx.util.converter.NumberStringConverter;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.ApplicationContext;
 import org.springframework.util.Assert;
 
 import java.awt.image.BufferedImage;
@@ -81,18 +77,18 @@ public final class JavaFxUtil {
   }
 
   public static void makeNumericTextField(TextField textField, int maxLength, boolean allowNegative) {
-    JavaFxUtil.addListener(textField.textProperty(), (observable, oldValue, newValue) -> {
-      boolean isNegative = newValue.startsWith("-");
-      String value = newValue;
+    JavaFxUtil.addListener(textField.textProperty(), observable -> {
+      String value = textField.getText();
+      boolean isNegative = value.startsWith("-");
       int maxLengthActual = isNegative && allowNegative ? maxLength + 1 : maxLength;
 
       if (allowNegative) {
         if (!value.matches("-?\\d*")) {
-          value = newValue.replaceAll("[^-\\d]", "");
+          value = value.replaceAll("[^-\\d]", "");
         }
       } else {
         if (!value.matches("\\d*")) {
-          value = newValue.replaceAll("[^\\d]", "");
+          value = value.replaceAll("[^\\d]", "");
         }
       }
 

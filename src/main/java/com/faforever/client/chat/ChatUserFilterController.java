@@ -60,10 +60,10 @@ public class ChatUserFilterController implements Controller<Node> {
   }
 
   public void initialize() {
-    clanFilterField.textProperty().addListener((observable, oldValue, newValue) -> filterUsers());
-    minRatingFilterField.textProperty().addListener((observable, oldValue, newValue) -> filterUsers());
-    maxRatingFilterField.textProperty().addListener((observable, oldValue, newValue) -> filterUsers());
-    countryFilterField.textProperty().addListener(((observable, oldValue, newValue) -> filterCountry()));
+    clanFilterField.textProperty().addListener(observable -> filterUsers());
+    minRatingFilterField.textProperty().addListener(observable -> filterUsers());
+    maxRatingFilterField.textProperty().addListener(observable -> filterUsers());
+    countryFilterField.textProperty().addListener((observable -> filterCountry()));
     currentSelectedCountries = flagService.getCountries(null);
   }
 

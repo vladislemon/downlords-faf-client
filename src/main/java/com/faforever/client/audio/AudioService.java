@@ -47,9 +47,8 @@ public class AudioService implements InitializingBean {
   @Override
   public void afterPropertiesSet() throws IOException {
     notificationsPrefs = preferencesService.getPreferences().getNotification();
-    JavaFxUtil.addListener(notificationsPrefs.soundsEnabledProperty(), (observable, oldValue, newValue) -> {
-          playSounds = newValue;
-        }
+    JavaFxUtil.addListener(notificationsPrefs.soundsEnabledProperty(), observable ->
+        playSounds = notificationsPrefs.isSoundsEnabled()
     );
     playSounds = notificationsPrefs.isSoundsEnabled();
 

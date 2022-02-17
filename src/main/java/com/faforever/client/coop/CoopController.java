@@ -21,6 +21,7 @@ import com.faforever.client.util.TimeService;
 import com.faforever.commons.lobby.GameStatus;
 import com.faforever.commons.lobby.GameType;
 import com.google.common.base.Strings;
+import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.ObservableList;
@@ -96,7 +97,8 @@ public class CoopController extends AbstractViewController<Node> {
   public void initialize() {
     missionComboBox.setCellFactory(param -> missionListCell());
     missionComboBox.setButtonCell(missionListCell());
-    missionComboBox.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> setSelectedMission(newValue));
+    ReadOnlyObjectProperty<CoopMissionBean> selectedMissionProperty = missionComboBox.getSelectionModel().selectedItemProperty();
+    selectedMissionProperty.addListener(observable -> setSelectedMission(selectedMissionProperty.get()));
     playButton.disableProperty().bind(titleTextField.textProperty().isEmpty());
 
     numberOfPlayersComboBox.setButtonCell(numberOfPlayersCell());

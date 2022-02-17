@@ -146,8 +146,8 @@ public class ChatController extends AbstractViewController<Node> {
       }
     });
 
-    JavaFxUtil.addListener(chatService.connectionStateProperty(), (observable, oldValue, newValue) -> onConnectionStateChange(newValue));
-    onConnectionStateChange(chatService.connectionStateProperty().get());
+    JavaFxUtil.addListener(chatService.connectionStateProperty(), observable -> onConnectionStateChange(chatService.getConnectionState()));
+    onConnectionStateChange(chatService.getConnectionState());
 
     JavaFxUtil.addListener(tabPane.getTabs(), (ListChangeListener<Tab>) change -> {
       while (change.next()) {

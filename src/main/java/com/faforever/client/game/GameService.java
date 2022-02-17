@@ -196,24 +196,22 @@ public class GameService implements InitializingBean, DisposableBean {
 
   @Override
   public void afterPropertiesSet() {
-    currentGame.addListener((observable, oldValue, newValue) -> {
-      if (newValue == null) {
+    currentGame.addListener(observable -> {
+      GameBean game = getCurrentGame();
+      if (game == null) {
         discordRichPresenceService.clearGameInfo();
         return;
       }
 
-      InvalidationListener listener = generateNumberOfPlayersChangeListener(newValue);
-      JavaFxUtil.addAndTriggerListener(newValue.numPlayersProperty(), listener);
+      InvalidationListener listener = generateNumberOfPlayersChangeListener(game);
+      JavaFxUtil.addAndTriggerListener(game.numPlayersProperty(), listener);
 
-      ChangeListener<GameStatus> statusChangeListener = generateGameStatusListener(newValue);
-      JavaFxUtil.addAndTriggerListener(newValue.statusProperty(), statusChangeListener);
+      ChangeListener<GameStatus> statusChangeListener = generateGameStatusListener(game);
+      JavaFxUtil.addAndTriggerListener(game.statusProperty(), statusChangeListener);
     });
 
     JavaFxUtil.attachListToMap(games, gameIdToGame);
-    JavaFxUtil.addListener(
-        gameRunning,
-        (observable, oldValue, newValue) -> reconnectTimerService.setGameRunning(newValue)
-    );
+    JavaFxUtil.addListener(gameRunning, observable -> reconnectTimerService.setGameRunning(isGameRunning()));
 
     eventBus.register(this);
 

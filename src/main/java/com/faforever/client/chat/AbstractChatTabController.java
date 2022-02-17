@@ -29,6 +29,8 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Joiner;
 import com.google.common.eventbus.EventBus;
 import com.google.common.io.CharStreams;
+import javafx.beans.InvalidationListener;
+import javafx.beans.WeakInvalidationListener;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.value.ChangeListener;
@@ -140,10 +142,10 @@ public abstract class AbstractChatTabController implements Controller<Tab> {
    */
   private final List<ChatMessage> waitingMessages;
   private final IntegerProperty unreadMessagesCount;
-  private final ChangeListener<Boolean> resetUnreadMessagesListener;
+  private final InvalidationListener resetUnreadMessagesListener;
   private final ChangeListener<Number> zoomChangeListener;
   private final ChangeListener<Boolean> tabPaneFocusedListener;
-  private final ChangeListener<Boolean> stageFocusedListener;
+  private final InvalidationListener stageFocusedListener;
   private int lastEntryId;
   private boolean isChatReady;
 
@@ -190,7 +192,7 @@ public abstract class AbstractChatTabController implements Controller<Tab> {
 
     waitingMessages = new ArrayList<>();
     unreadMessagesCount = new SimpleIntegerProperty();
-    resetUnreadMessagesListener = (observable, oldValue, newValue) -> {
+    resetUnreadMessagesListener = observable -> {
       if (hasFocus()) {
         setUnread(false);
       }
@@ -199,7 +201,7 @@ public abstract class AbstractChatTabController implements Controller<Tab> {
       preferencesService.getPreferences().getChat().setZoom(newValue.doubleValue());
       preferencesService.storeInBackground();
     };
-    stageFocusedListener = (window, windowFocusOld, windowFocusNew) -> {
+    stageFocusedListener = observable -> {
       if (getRoot() != null
           && getRoot().getTabPane() != null
           && getRoot().getTabPane().isVisible()) {
@@ -278,8 +280,8 @@ public abstract class AbstractChatTabController implements Controller<Tab> {
     addImagePasteListener();
 
     unreadMessagesCount.addListener((observable, oldValue, newValue) -> chatService.incrementUnreadMessagesCount(newValue.intValue() - oldValue.intValue()));
-    JavaFxUtil.addListener(StageHolder.getStage().focusedProperty(), new WeakChangeListener<>(resetUnreadMessagesListener));
-    JavaFxUtil.addListener(getRoot().selectedProperty(), new WeakChangeListener<>(resetUnreadMessagesListener));
+    JavaFxUtil.addListener(StageHolder.getStage().focusedProperty(), new WeakInvalidationListener(resetUnreadMessagesListener));
+    JavaFxUtil.addListener(getRoot().selectedProperty(), new WeakInvalidationListener(resetUnreadMessagesListener));
 
     getRoot().setOnClosed(this::onClosed);
     eventBus.register(this);
@@ -306,7 +308,7 @@ public abstract class AbstractChatTabController implements Controller<Tab> {
       if (newTabPane == null) {
         return;
       }
-      JavaFxUtil.addListener(StageHolder.getStage().focusedProperty(), new WeakChangeListener<>(stageFocusedListener));
+      JavaFxUtil.addListener(StageHolder.getStage().focusedProperty(), new WeakInvalidationListener(stageFocusedListener));
       JavaFxUtil.addListener(newTabPane.focusedProperty(), new WeakChangeListener<>(tabPaneFocusedListener));
     });
   }
