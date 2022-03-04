@@ -37,7 +37,7 @@ public class FxmlProcessor {
   Class<?> controllerClass;
   Constructor<?> controllerConstructor;
   Set<Class<?>> controllerParams = new LinkedHashSet<>();
-  Set<Class<?>> fxObjectParams = new LinkedHashSet<>();
+  Set<Class<?>> fxViewObjectParams = new LinkedHashSet<>();
   Set<String> staticImports = new HashSet<>();
   Set<String> starImports = new HashSet<>();
   StringBuilder stringBuilder = new StringBuilder();
@@ -77,8 +77,8 @@ public class FxmlProcessor {
     if (controllerClass == null) {
       throw new IllegalArgumentException("Fxml has no controller");
     }
-    fxObjectParams.addAll(controllerParams);
-    fxObjectParams.add(resolver.resolve("com.faforever.client.i18n.I18n"));
+    fxViewObjectParams.addAll(controllerParams);
+    fxViewObjectParams.add(resolver.resolve("com.faforever.client.i18n.I18n"));
   }
 
   public void generateJava(Path outPath) {
@@ -121,7 +121,7 @@ public class FxmlProcessor {
   }
 
   public void appendImports() {
-    appendln("import com.faforever.client.fxml.FxObject;");
+    appendln("import com.faforever.client.fxml.FxViewObject;");
     for (String imprt : staticImports) {
       append("import ");
       append(imprt.replace("$", "."));
@@ -134,9 +134,9 @@ public class FxmlProcessor {
       appendln(".*;");
     }
 
-    for (Class<?> fxObjectParam : fxObjectParams) {
+    for (Class<?> fxViewObjectParam : fxViewObjectParams) {
       append("import ");
-      append(fxObjectParam.getName());
+      append(fxViewObjectParam.getName());
       appendln(";");
     }
     appendln("");
@@ -158,7 +158,7 @@ public class FxmlProcessor {
     if (typeVariableString != null) {
       append(typeVariableString);
     }
-    append(" extends FxObject<");
+    append(" extends FxViewObject<");
     if (!OsUtils.isNullOrEmpty(controllerType)) {
       append(controllerType);
     } else {
@@ -173,18 +173,18 @@ public class FxmlProcessor {
     append(viewType);
     appendln(" view;");
 
-    fxObjectParams.forEach(fxObjectParam -> appendln("\tpublic " + fxObjectParam.getSimpleName() + " " + StringUtils.camelCase(fxObjectParam.getSimpleName()) + ";"));
+    fxViewObjectParams.forEach(fxViewObjectParam -> appendln("\tpublic " + fxViewObjectParam.getSimpleName() + " " + StringUtils.camelCase(fxViewObjectParam.getSimpleName()) + ";"));
 
     appendln("");
 
     append("\tpublic ");
     append(fxClassName);
     append("(");
-    append(StringUtils.join(fxObjectParams.stream().map(fxObjectParam ->
-        fxObjectParam.getSimpleName() + " " + StringUtils.camelCase(fxObjectParam.getSimpleName()))));
+    append(StringUtils.join(fxViewObjectParams.stream().map(fxViewObjectParam ->
+        fxViewObjectParam.getSimpleName() + " " + StringUtils.camelCase(fxViewObjectParam.getSimpleName()))));
     appendln(") {");
-    fxObjectParams.forEach(fxObjectParam -> {
-      String paramName = StringUtils.camelCase(fxObjectParam.getSimpleName());
+    fxViewObjectParams.forEach(fxViewObjectParam -> {
+      String paramName = StringUtils.camelCase(fxViewObjectParam.getSimpleName());
       appendln("\t\tthis." + paramName + " = " + paramName + ";");
     });
     appendln("}");

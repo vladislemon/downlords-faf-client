@@ -2,8 +2,7 @@ package com.faforever.client.fxml;
 
 import com.faforever.client.fxml.model.processor.FxmlProcessor;
 import com.faforever.client.fxml.utils.OsUtils;
-import javafx.application.Application;
-import javafx.stage.Stage;
+import com.sun.javafx.application.PlatformImpl;
 import org.springframework.util.ClassUtils;
 
 import java.io.IOException;
@@ -16,42 +15,47 @@ import java.util.List;
 
 import static java.lang.System.out;
 
-public class FXMLCompiler extends Application {
+public class FXMLCompiler {
     public Path outPath = Path.of("src", "main", "java", ClassUtils.classPackageAsResourcePath(FXMLCompiler.class)).resolve("compiled");
 
-    public static void main(String[] args) {
-        Application.launch();
+    public static void main(String[] args) throws IOException, URISyntaxException {
+        FXMLCompiler fxmlCompiler = new FXMLCompiler();
 
+        PlatformImpl.startup(fxmlCompiler::run);
     }
 
-    void run() throws URISyntaxException, IOException {
-        Files.createDirectories(outPath);
-        URL url = this.getClass().getClassLoader().getResource("theme");
-        if (url != null) {
-            Path resourcePath = Path.of(url.toURI());
+    void run() {
+        try {
+            Files.createDirectories(outPath);
+            URL url = this.getClass().getClassLoader().getResource("theme");
+            if (url != null) {
+                Path resourcePath = Path.of(url.toURI());
 
-            boolean generatePreloader = false;
-            int failed = 0;
-            String[] files = OsUtils.GetDirectoryFiles(resourcePath, true,
-                file -> file.getName().endsWith(".fxml"));
-            List<String> MappedTypesToCreate = new ArrayList<>();
-            for (String file : files) {
-                try {
-                    if (file.endsWith(".fxml")) {
-                        out.println("To compile: " + file);
-                        compile(Path.of(file), resourcePath, MappedTypesToCreate);
-                        out.println("SUCCESS");
+                boolean generatePreloader = false;
+                int failed = 0;
+                String[] files = OsUtils.GetDirectoryFiles(resourcePath, true,
+                    file -> file.getName().endsWith(".fxml"));
+                List<String> MappedTypesToCreate = new ArrayList<>();
+                for (String file : files) {
+                    try {
+                        if (file.endsWith(".fxml")) {
+                            out.println("To compile: " + file);
+                            compile(Path.of(file), resourcePath, MappedTypesToCreate);
+                            out.println("SUCCESS");
+                        }
+                    } catch (Exception e) {
+                        failed++;
+                        out.println("FAILED");
+                        e.printStackTrace(out);
                     }
-                } catch (Exception e) {
-                    failed++;
-                    out.println("FAILED");
-                    e.printStackTrace(out);
                 }
+                if (generatePreloader) {
+                    computePreloader(resourcePath, MappedTypesToCreate);
+                }
+                out.println(String.format("%d out of %d files compiled", files.length - failed, files.length));
             }
-            if (generatePreloader) {
-                computePreloader(resourcePath, MappedTypesToCreate);
-            }
-            out.println(String.format("%d out of %d files compiled", files.length - failed, files.length));
+        } catch (Exception e) {
+            e.printStackTrace();
         }
         System.exit(0);
     }
@@ -92,10 +96,5 @@ public class FXMLCompiler extends Application {
         } else {
             mappedTypesToCreate.add(processor.getPackageName() + "." + processor.getFxClassName().trim());
         }
-    }
-
-    @Override
-    public void start(Stage primaryStage) throws Exception {
-        run();
     }
 }

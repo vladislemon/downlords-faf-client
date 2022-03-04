@@ -1,6 +1,7 @@
 package com.faforever.client.fxml.infrastructure;
 
 import lombok.Data;
+import lombok.ToString;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -8,12 +9,15 @@ import java.util.List;
 import java.util.Map;
 
 @Data
+@ToString(onlyExplicitlyIncluded = true)
 public class JavaNode {
 
     private final List<JavaNode> children = new ArrayList<>();
+    private final Map<String, String> attributes = new HashMap<>();
+
     private final JavaNode parent;
+    @ToString.Include
     private final String name;
-    public Map<String, String> Attributes = new HashMap<>();
     private String controlName;
     private Class<?> clazz;
     private String innerText;
@@ -23,38 +27,22 @@ public class JavaNode {
         this.parent = parent;
     }
 
-    public String getInnerText() {
-        return innerText;
-    }
-
-    public void setInnerText(String innerText) {
-        this.innerText = innerText;
-    }
-
-    public String getName() {
-        return name;
-    }
-
     @Override
     public String toString() {
         return getName();
     }
 
     public String extractAttribute(String attrName) {
-        if (Attributes.containsKey(attrName)) {
-            String result = Attributes.get(attrName);
-            Attributes.remove(attrName);
+        if (attributes.containsKey(attrName)) {
+            String result = attributes.get(attrName);
+            attributes.remove(attrName);
             return result;
         }
         return "";
     }
 
     public Map<String, String> getAttributes() {
-        return Attributes;
-    }
-
-    public void removeChild(JavaNode child) {
-        children.remove(child);
+        return attributes;
     }
 
     public Boolean hasChildren() {

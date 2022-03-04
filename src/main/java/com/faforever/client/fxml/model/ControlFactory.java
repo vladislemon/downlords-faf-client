@@ -100,6 +100,9 @@ public class ControlFactory {
       setupId(javaNode);
       setupAttributes(javaNode);
     } else {
+      if (javaNode.getName().equals("Font")) {
+        throw new UnsupportedOperationException("Font not supported");
+      }
       String codeValues = addCodeValues(javaNode);
 
       addCodeLine(codeValues);
@@ -150,7 +153,7 @@ public class ControlFactory {
   }
 
   private void setControlName(JavaNode javaNode) {
-    String controlName = javaNode.Attributes.get(FX_NODE_ID);
+    String controlName = javaNode.getAttributes().get(FX_NODE_ID);
     if (controlName == null) {
       String name = javaNode.getName();
       if (name.equals(FX_INCLUDE)) {
@@ -427,11 +430,11 @@ public class ControlFactory {
     }
     String controllerName = format("{0}{1}", StringUtils.camelCase(controllerClassName), String.valueOf(controlIndexMap.get(controllerClassName)));
     controlIndexMap.put(controllerClassName, controlIndexMap.get(controllerClassName) + 1);
-    String fxObjectArgument = StringUtils.join(includeFxmlProcessor.getFxObjectParams().stream().map(fxObjectParam -> StringUtils.camelCase(fxObjectParam.getSimpleName())));
-    addCodeLine(format("{0} {1} = new {2}({3})", includeFxmlProcessor.getFxClassName(), controllerName, includeFxmlProcessor.getFxClassName(), fxObjectArgument));
+    String fxViewObjectArgument = StringUtils.join(includeFxmlProcessor.getFxViewObjectParams().stream().map(fxViewObjectParam -> StringUtils.camelCase(fxViewObjectParam.getSimpleName())));
+    addCodeLine(format("{0} {1} = new {2}({3})", includeFxmlProcessor.getFxClassName(), controllerName, includeFxmlProcessor.getFxClassName(), fxViewObjectArgument));
     addCodeLine(format("{0}.initialize()", controllerName));
     addCodeLine(format("{0} {1} = {2}.view", includeFxmlProcessor.getViewType(), include.getControlName(), controllerName));
-    fxmlProcessor.getFxObjectParams().addAll(includeFxmlProcessor.getFxObjectParams());
+    fxmlProcessor.getFxViewObjectParams().addAll(includeFxmlProcessor.getFxViewObjectParams());
     fxmlProcessor.getResolver().getFixedTypeNames().putAll(includeFxmlProcessor.getResolver().getFixedTypeNames());
     fxmlProcessor.getResolver().getFixedTypes().putAll(includeFxmlProcessor.getResolver().getFixedTypes());
   }

@@ -49,7 +49,7 @@ public class XmlDocToJavaNode {
         int attrLength = element.getAttributes().getLength();
         for (int i = 0; i < attrLength; i++) {
             Node attrNode = element.getAttributes().item(i);
-            result.Attributes.put(attrNode.getNodeName(), attrNode.getNodeValue());
+            result.getAttributes().put(attrNode.getNodeName(), attrNode.getNodeValue());
         }
 
         int childrenLength = element.getChildNodes().getLength();

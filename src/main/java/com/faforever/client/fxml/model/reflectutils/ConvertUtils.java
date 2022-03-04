@@ -83,7 +83,7 @@ public class ConvertUtils {
         String[] nameParts = name.split("\\.");
         name = nameParts[nameParts.length - 1];
         List<String> parameters = new ArrayList<>();
-        for (Map.Entry<String, String> entry : javaNode.Attributes.entrySet()) {
+        for (Map.Entry<String, String> entry : javaNode.getAttributes().entrySet()) {
             String value = entry.getValue();
             parameters.add(value);
         }
