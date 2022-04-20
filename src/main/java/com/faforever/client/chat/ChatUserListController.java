@@ -113,6 +113,7 @@ public class ChatUserListController implements Controller<VBox>, InitializingBea
   private final ExecutorService usersEventQueueExecutor = Executors.newSingleThreadExecutor();
 
   private Future<?> listInitializationFuture;
+  private Runnable onListInitializedHandler;
 
   /* ----- Listeners ----- */
   private final ListChangeListener<ChatUserCategory> hiddenCategoriesListener = change -> {
@@ -185,6 +186,10 @@ public class ChatUserListController implements Controller<VBox>, InitializingBea
     usersEventQueueExecutor.execute(() -> chatChannel.getUsers().forEach(this::onUserJoined));
   }
 
+  public void setOnListInitialized(Runnable onListInitializedHandler) {
+    this.onListInitializedHandler = onListInitializedHandler;
+  }
+
   private void prepareData() {
     Arrays.stream(ChatUserCategory.values()).forEach(category -> {
       visibleCategories.add(category);
@@ -243,6 +248,10 @@ public class ChatUserListController implements Controller<VBox>, InitializingBea
         userListContainer.getChildren().add(scrollPane);
         userListTools.setDisable(false);
         updateUserCount();
+
+        if (onListInitializedHandler != null) {
+          onListInitializedHandler.run();
+        }
       });
     });
   }
