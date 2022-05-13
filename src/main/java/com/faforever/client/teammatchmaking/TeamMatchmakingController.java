@@ -55,7 +55,6 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import static com.faforever.client.chat.ChatService.PARTY_CHANNEL_SUFFIX;
 
@@ -261,7 +260,7 @@ public class TeamMatchmakingController extends AbstractViewController<Node> {
         PartyMemberItemController controller = uiService.loadFxml("theme/play/teammatchmaking/matchmaking_member_card.fxml");
         controller.setMember(member);
         return controller.getRoot();
-      }).collect(Collectors.toList());
+      }).toList();
       JavaFxUtil.runLater(() -> {
         playerCard.pseudoClassStateChanged(LEADER_PSEUDO_CLASS,
             (teamMatchmakingService.getParty().getOwner().equals(player) && teamMatchmakingService.getParty().getMembers().size() > 1));
@@ -298,7 +297,7 @@ public class TeamMatchmakingController extends AbstractViewController<Node> {
         .filter(entry -> entry.getValue().isSelected())
         .map(Map.Entry::getKey)
         .sorted(Comparator.naturalOrder())
-        .collect(Collectors.toList());
+        .toList();
     if (factions.isEmpty()) {
       selectFactionsBasedOnParty();
       return;
@@ -350,7 +349,7 @@ public class TeamMatchmakingController extends AbstractViewController<Node> {
       controller.setQueue(queue);
       controller.getRoot().prefWidthProperty().bind(Bindings.createDoubleBinding(() -> queuePane.getWidth() / queuesPerRow - queuePane.getHgap(), queuePane.widthProperty()));
       return controller.getRoot();
-    }).collect(Collectors.toList());
+    }).toList();
     JavaFxUtil.runLater(() -> queuePane.getChildren().setAll(queueCards));
   }
 }

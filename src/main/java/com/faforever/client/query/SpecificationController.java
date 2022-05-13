@@ -44,7 +44,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import static com.github.rutledgepaulv.qbuilders.operators.ComparisonOperator.EQ;
 import static com.github.rutledgepaulv.qbuilders.operators.ComparisonOperator.EX;
@@ -227,7 +226,7 @@ public class SpecificationController implements Controller<Node> {
   private Collection<Integer> splitInts(String value) {
     return Arrays.stream(value.split(","))
         .map(Integer::parseInt)
-        .collect(Collectors.toList());
+        .toList();
   }
 
   @SuppressWarnings("unchecked")

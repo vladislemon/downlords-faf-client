@@ -67,7 +67,6 @@ import java.util.TreeMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-import java.util.stream.Collectors;
 
 import static java.util.Locale.US;
 
@@ -410,7 +409,7 @@ public class ChatUserListController implements Controller<VBox>, InitializingBea
         currentWord -> usernameToChatUserList.keySet().stream()
             .filter(username -> username.toLowerCase(US).startsWith(currentWord.toLowerCase()))
             .sorted()
-            .collect(Collectors.toList())
+            .toList()
     );
   }
 
@@ -419,7 +418,7 @@ public class ChatUserListController implements Controller<VBox>, InitializingBea
     return usersEventQueueExecutor.submit(() -> source.stream()
             .filter(item -> item.getUser().isPresent() && item.getCategory() == category)
             .map(item -> item.getUser().get())
-            .collect(Collectors.toList()))
+            .toList())
         .get();
   }
 
@@ -429,7 +428,7 @@ public class ChatUserListController implements Controller<VBox>, InitializingBea
             .map(ChatUserItem::getUser)
             .filter(Optional::isPresent)
             .map(Optional::get)
-            .collect(Collectors.toList()))
+            .toList())
         .get();
   }
 

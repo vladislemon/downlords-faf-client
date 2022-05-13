@@ -25,7 +25,6 @@ import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
 import java.util.List;
-import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import static java.awt.RenderingHints.KEY_ANTIALIASING;
@@ -63,12 +62,12 @@ public class TrayIconManager implements InitializingBean {
       if (badgeCount < 1) {
         icons = IntStream.range(4, 9)
             .mapToObj(power -> generateTrayIcon((int) Math.pow(2, power)))
-            .collect(Collectors.toList());
+            .toList();
       } else {
         icons = IntStream.range(4, 9)
             .mapToObj(power -> generateTrayIcon((int) Math.pow(2, power)))
             .map(image -> addBadge(image, badgeCount))
-            .collect(Collectors.toList());
+            .toList();
       }
       StageHolder.getStage().getIcons().setAll(icons);
     });

@@ -69,7 +69,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ScheduledFuture;
-import java.util.stream.Collectors;
 
 import static com.faforever.commons.api.elide.ElideNavigator.qBuilder;
 
@@ -406,7 +405,7 @@ public class TeamMatchmakingService implements InitializingBean {
         .map(this::createPartyMemberFromOnlinePLayers)
         .filter(Objects::nonNull)
         .peek(partyMember -> partyMember.setGameStatusChangeListener(observable -> checkMemberGameStatus(partyMember)))
-        .collect(Collectors.toList());
+        .toList();
     party.getMembers().forEach(partyMember -> partyMember.setGameStatusChangeListener(null));
     party.setMembers(members);
   }

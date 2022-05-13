@@ -41,7 +41,6 @@ import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.stream.Collectors;
 
 @Component
 @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
@@ -126,7 +125,7 @@ public class LiveReplayController extends AbstractViewController<Node> {
     modNames = simMods.entrySet().stream()
         .limit(2)
         .map(Entry::getValue)
-        .collect(Collectors.toList());
+        .toList();
     if (simModCount > 2) {
       return new SimpleStringProperty(i18n.get("game.mods.twoAndMore", modNames.get(0), simMods.size() - 1));
     }

@@ -84,7 +84,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 import static com.faforever.client.fx.JavaFxUtil.PATH_STRING_CONVERTER;
 
@@ -201,7 +200,7 @@ public class SettingsController implements Controller<Node> {
             controller.setSelected(locale.equals(currentLocale));
             return controller.getRoot();
           })
-          .collect(Collectors.toList());
+          .toList();
       languagesContainer.getChildren().setAll(nodes);
     };
   }
@@ -635,7 +634,7 @@ public class SettingsController implements Controller<Node> {
   }
 
   public void onSelectBackgroundImage() {
-    platformService.askForPath(i18n.get("settings.appearance.chooseImage")).ifPresent(newImagePath -> {
+    platformService.askForFile(i18n.get("settings.appearance.chooseImage")).ifPresent(newImagePath -> {
       preferencesService.getPreferences().getMainWindow().setBackgroundImagePath(newImagePath);
       preferencesService.storeInBackground();
     });

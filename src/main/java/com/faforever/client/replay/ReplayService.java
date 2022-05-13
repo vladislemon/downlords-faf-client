@@ -161,7 +161,7 @@ public class ReplayService {
             }
           }).reversed());
 
-      List<Path> filesList = filesStream.collect(Collectors.toList());
+      List<Path> filesList = filesStream.toList();
       int numPages = filesList.size() / pageSize;
 
       List<CompletableFuture<ReplayBean>> replayFutures = filesList.stream()
@@ -169,14 +169,14 @@ public class ReplayService {
           .limit(pageSize)
           .map(this::tryLoadingLocalReplay)
           .filter(e -> !e.isCompletedExceptionally())
-          .collect(Collectors.toList());
+          .toList();
 
       return Mono.fromFuture(CompletableFuture.allOf(replayFutures.toArray(new CompletableFuture[0]))
           .thenApply(ignoredVoid ->
               replayFutures.stream()
                   .map(CompletableFuture::join)
                   .filter(Objects::nonNull)
-                  .collect(Collectors.toList()))
+                  .toList())
       ).zipWith(Mono.just(numPages)).toFuture();
     }
   }
@@ -280,11 +280,11 @@ public class ReplayService {
       ReplayDataParser replayDataParser = replayFileReader.parseReplay(path);
       replay.getChatMessages().setAll(replayDataParser.getChatMessages().stream()
           .map(chatMessage -> new ChatMessage(chatMessage.getTime(), chatMessage.getSender(), chatMessage.getMessage()))
-          .collect(Collectors.toList())
+          .toList()
       );
       replay.getGameOptions().setAll(replayDataParser.getGameOptions().stream()
           .map(gameOption -> new GameOption(gameOption.getKey(), gameOption.getValue()))
-          .collect(Collectors.toList())
+          .toList()
       );
       replay.getGameOptions().add(0, new GameOption("FAF Version", String.valueOf(parseSupComVersion(replayDataParser))));
       if (replay.getMapVersion() == null) {

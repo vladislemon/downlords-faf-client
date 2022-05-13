@@ -30,7 +30,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
 
 @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 @Component
@@ -122,7 +121,7 @@ public class GameTileController implements Controller<Node> {
   private String getSimModsLabelContent(Map<String, String> simMods) {
     List<String> modNames = simMods.values().stream()
         .limit(2)
-        .collect(Collectors.toList());
+        .toList();
 
     if (simMods.size() > 2) {
       return i18n.get("game.mods.twoAndMore", modNames.get(0), simMods.size() - 1);

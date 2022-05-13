@@ -31,7 +31,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 @Component
@@ -164,6 +163,6 @@ public class ModManagerController implements Controller<Parent> {
     return modToSelectedMap.entrySet().stream()
         .filter(Entry::getValue)
         .map(Entry::getKey)
-        .collect(Collectors.toList());
+        .toList();
   }
 }

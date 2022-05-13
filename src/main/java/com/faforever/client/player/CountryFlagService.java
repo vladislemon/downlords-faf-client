@@ -17,7 +17,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import static com.faforever.client.config.CacheNames.COUNTRY_FLAGS;
 import static com.faforever.client.config.CacheNames.COUNTRY_NAMES;
@@ -44,13 +43,13 @@ public class CountryFlagService {
   @Cacheable(value = COUNTRY_NAMES, sync = true)
   public List<String> getCountries(String startsWith) {
     if (startsWith == null) {
-      return Arrays.stream(Locale.getISOCountries()).collect(Collectors.toList());
+      return Arrays.stream(Locale.getISOCountries()).toList();
     }
 
     final String startsWithLowered = startsWith.toLowerCase();
     return Arrays.stream(Locale.getISOCountries())
         .filter(country -> matchCountry(country, startsWithLowered))
-        .collect(Collectors.toList());
+        .toList();
   }
 
   private boolean matchCountry(String countryCode, String startsWithLowered) {

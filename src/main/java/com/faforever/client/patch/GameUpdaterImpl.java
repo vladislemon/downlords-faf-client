@@ -24,7 +24,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static com.faforever.client.game.KnownFeaturedMod.BALANCE_TESTING;
@@ -38,8 +37,7 @@ import static com.faforever.client.game.KnownFeaturedMod.LADDER_1V1;
 public class GameUpdaterImpl implements GameUpdater {
 
   private static final List<String> NAMES_OF_FEATURED_BASE_MODS = Stream.of(FAF, FAF_BETA, FAF_DEVELOP, BALANCE_TESTING, LADDER_1V1)
-      .map(KnownFeaturedMod::getTechnicalName)
-      .collect(Collectors.toList());
+      .map(KnownFeaturedMod::getTechnicalName).toList();
 
   private final List<FeaturedModUpdater> featuredModUpdaters = new ArrayList<>();
   private final ModService modService;

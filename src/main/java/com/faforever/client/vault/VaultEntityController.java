@@ -40,7 +40,6 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
-import java.util.stream.Collectors;
 
 @Component
 @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
@@ -182,7 +181,7 @@ public abstract class VaultEntityController<T> extends AbstractViewController<No
           }
           return showRoomRoot;
         })
-        .collect(Collectors.toList());
+        .toList();
 
     loadingEntitiesFutureReference.get()
         .thenRun(() -> JavaFxUtil.runLater(() -> {
@@ -283,7 +282,7 @@ public abstract class VaultEntityController<T> extends AbstractViewController<No
     ObservableList<Node> children = pane.getChildren();
     List<Node> childrenToAdd = results.parallelStream()
         .map(this::getEntityCard)
-        .collect(Collectors.toList());
+        .toList();
 
     JavaFxUtil.runLater(() -> {
       children.setAll(childrenToAdd);

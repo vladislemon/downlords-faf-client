@@ -64,7 +64,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
-import java.util.stream.Collectors;
 
 import static com.faforever.client.player.EventService.EVENT_AEON_PLAYS;
 import static com.faforever.client.player.EventService.EVENT_AEON_WINS;
@@ -449,7 +448,7 @@ public class PlayerInfoWindowController implements Controller<Node> {
         })
         .sorted(Comparator.comparing(ratingJournal -> ratingJournal.getGamePlayerStats().getScoreTime()))
         .map(ratingJournal -> new Data<>((double) ratingJournal.getGamePlayerStats().getScoreTime().toEpochSecond(), (double) RatingUtil.getRating(ratingJournal)))
-        .collect(Collectors.toList());
+        .toList();
 
     xAxis.setTickLabelFormatter(ratingLabelFormatter());
     if (values.size() > 0) {

@@ -51,7 +51,6 @@ public class JSkillsRatingService implements RatingService {
             );
           });
           return team;
-        })
-        .collect(Collectors.toList()));
+        }).collect(Collectors.toList()));
   }
 }

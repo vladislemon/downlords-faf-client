@@ -48,7 +48,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
 @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 @Component
@@ -190,7 +189,7 @@ public class GamesTableController implements Controller<Node> {
     List<String> modNames;
       modNames = simMods.values().stream()
           .limit(2)
-          .collect(Collectors.toList());
+          .toList();
     if (simModCount > 2) {
       return new SimpleStringProperty(i18n.get("game.mods.twoAndMore", modNames.get(0), modNames.size() - 1));
     }

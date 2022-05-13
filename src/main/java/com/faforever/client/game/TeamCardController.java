@@ -27,7 +27,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
 @Component
 @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
@@ -60,7 +59,7 @@ public class TeamCardController implements Controller<Node> {
         if (team != null) {
           List<PlayerBean> players = entry.getValue().stream()
               .flatMap(playerName -> playerService.getPlayerByNameIfOnline(playerName).stream())
-              .collect(Collectors.toList());
+              .toList();
 
           TeamCardController teamCardController = uiService.loadFxml("theme/team_card.fxml");
           teamCardController.setPlayersInTeam(team, players,

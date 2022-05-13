@@ -152,7 +152,7 @@ public class ReviewsController<T extends ReviewBean> implements Controller<Pane>
           controller.setReview((T) review);
           return controller.getRoot();
         })
-        .collect(Collectors.toList());
+        .toList();
 
     JavaFxUtil.runLater(() -> otherReviewsContainer.getChildren().setAll(reviewNodes));
   }

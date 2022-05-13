@@ -92,7 +92,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
-import java.util.stream.Collectors;
 
 import static javafx.scene.layout.Background.EMPTY;
 
@@ -252,7 +251,7 @@ public class MainController implements Controller<Node>, InitializingBean {
           menuItem.setOnAction(event -> eventBus.post(new NavigateEvent((NavigationItem) menuButton.getUserData())));
           return menuItem;
         })
-        .collect(Collectors.toList());
+        .toList();
   }
 
   @Subscribe

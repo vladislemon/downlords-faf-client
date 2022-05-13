@@ -31,7 +31,6 @@ import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Component
@@ -129,7 +128,7 @@ public class OnlineReplayVaultController extends VaultEntityController<ReplayBea
     modService.getFeaturedMods().thenAccept(featuredMods ->
         JavaFxUtil.runLater(() ->
             featuredModFilterController.setItems(featuredMods.stream().map(FeaturedModBean::getDisplayName)
-                .collect(Collectors.toList()))));
+                .toList())));
 
     CategoryFilterController leaderboardFilterController = searchController.addCategoryFilter("playerStats.ratingChanges.leaderboard.id",
         i18n.get("leaderboard.displayName"), Map.of());

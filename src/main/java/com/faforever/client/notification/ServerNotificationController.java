@@ -19,7 +19,6 @@ import org.springframework.stereotype.Component;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Component
 @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
@@ -63,7 +62,7 @@ public class ServerNotificationController implements Controller<Node> {
     JavaFxUtil.runLater(() -> errorMessageView.getEngine().loadContent(notification.getText()));
 
     Optional.ofNullable(notification.getActions())
-        .map(actions -> actions.stream().map(this::createButton).collect(Collectors.toList()))
+        .map(actions -> actions.stream().map(this::createButton).toList())
         .ifPresent(dialogLayout::setActions);
     if (notification.getCustomUI() != null) {
       serverNotificationRoot.getChildren().add(notification.getCustomUI());

@@ -28,7 +28,6 @@ import java.security.NoSuchAlgorithmException;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 @Lazy
@@ -106,7 +105,7 @@ public class DownloadService {
     return preferencesService.getPreferences().getMirror().getMirrorURLs().stream()
         .map(mirror -> getMirrorURL(mirror, url))
         .flatMap(Optional::stream)
-        .collect(Collectors.toList());
+        .toList();
   }
 
   public Optional<URL> getMirrorURL(URI mirror, URL url) {

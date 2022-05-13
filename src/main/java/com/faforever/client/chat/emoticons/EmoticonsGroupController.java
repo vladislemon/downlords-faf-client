@@ -19,7 +19,6 @@ import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Component
@@ -53,7 +52,7 @@ public class EmoticonsGroupController implements Controller<VBox> {
       EmoticonController controller = uiService.loadFxml("theme/chat/emoticons/emoticon.fxml");
       controller.setEmoticon(emoticon, onEmoticonAction);
       return controller.getRoot();
-    }).collect(Collectors.toList());
+    }).toList();
     emoticonsPane.getChildren().addAll(emoticonViewList);
   }
 

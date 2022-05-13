@@ -26,7 +26,6 @@ import com.faforever.client.util.ConcurrentUtil;
 import com.google.common.annotations.VisibleForTesting;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.ReadOnlyObjectProperty;
-import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
@@ -52,7 +51,6 @@ import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
-import java.util.stream.Collectors;
 
 @Component
 @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
@@ -224,13 +222,13 @@ public class LoginController implements Controller<Pane> {
     if (messages.isEmpty()) {
       return;
     }
-    List<Node> controllers = messages.stream().map(message -> {
+    List<Pane> controllers = messages.stream().map(message -> {
       AnnouncementController controller = uiService.loadFxml("theme/login/announcement.fxml");
       controller.setTitle(message.getTitle());
       controller.setMessage(message.getDescription());
       controller.setTime(message.getStartOn(), message.getEndOn());
       return controller.getRoot();
-    }).collect(Collectors.toList());
+    }).toList();
     JavaFxUtil.runLater(() -> {
       messagesContainer.getChildren().addAll(controllers);
       messagesContainer.setVisible(true);

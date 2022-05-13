@@ -237,7 +237,7 @@ public class ReportDialogController implements Controller<Node> {
 
   public void setReplay(ReplayBean replay) {
     TextFields.bindAutoCompletion(offender, replay.getTeams().values().stream().flatMap(Collection::stream)
-        .collect(Collectors.toList()));
+        .toList());
     gameId.setText(String.valueOf(replay.getId()));
   }
 

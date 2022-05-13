@@ -38,7 +38,6 @@ import javafx.collections.ObservableMap;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.engio.mbassy.listener.Handler;
-import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.kitteh.irc.client.library.Client;
 import org.kitteh.irc.client.library.Client.Builder.Server.SecurityType;
@@ -79,7 +78,6 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.concurrent.CompletableFuture;
-import java.util.stream.Collectors;
 
 import static com.faforever.client.chat.ChatColorMode.DEFAULT;
 import static com.faforever.client.chat.ChatUserCategory.MODERATOR;
@@ -269,7 +267,7 @@ public class KittehChatService implements ChatService, InitializingBean, Disposa
   @Handler
   public void onChatUserList(ChannelNamesUpdatedEvent event) {
     Channel channel = event.getChannel();
-    List<ChatChannelUser> users = channel.getUsers().stream().map(user -> getOrCreateChatUser(user, channel)).collect(Collectors.toList());
+    List<ChatChannelUser> users = channel.getUsers().stream().map(user -> getOrCreateChatUser(user, channel)).toList();
     getOrCreateChannel(channel.getName()).addUsers(users);
   }
 

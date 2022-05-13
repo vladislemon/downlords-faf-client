@@ -51,7 +51,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
-import java.util.stream.Collectors;
 
 
 @Slf4j
@@ -163,7 +162,7 @@ public class LeaderboardController implements Controller<Tab> {
       List<SubdivisionBean> majorDivisions = subdivisions
           .stream()
           .filter(subdivision -> subdivision.getIndex() == 1)
-          .collect(Collectors.toList());
+          .toList();
       Collections.reverse(majorDivisions);
       majorDivisionPicker.getItems().addAll(majorDivisions);
     });

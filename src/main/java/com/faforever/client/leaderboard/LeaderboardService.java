@@ -39,7 +39,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.Collectors;
 
 import static com.faforever.commons.api.elide.ElideNavigator.qBuilder;
 
@@ -217,7 +216,7 @@ public class LeaderboardService {
       List<Integer> playerIds = leagueSeasonScores
           .stream()
           .map(LeagueSeasonScore::getLoginId)
-          .collect(Collectors.toList());
+          .toList();
       return playerService.getPlayersByIds(playerIds).thenApply(playerBeans ->
           leagueSeasonScores
               .stream()
@@ -226,7 +225,7 @@ public class LeaderboardService {
                       .stream()
                       .filter(playerBean -> playerBean.getId().equals(leagueSeasonScore.getLoginId()))
                       .map(playerBean -> leaderboardMapper.map(leagueSeasonScore, playerBean, new CycleAvoidingMappingContext())))
-              .collect(Collectors.toList()));
+              .toList());
     });
   }
 

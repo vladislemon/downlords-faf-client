@@ -304,7 +304,7 @@ public class ModService implements InitializingBean, DisposableBean {
     Map<String, Boolean> modStates = readModStates();
     return getInstalledModVersions().parallelStream()
         .filter(mod -> modStates.containsKey(mod.getUid()) && modStates.get(mod.getUid()))
-        .collect(Collectors.toList());
+        .toList();
   }
 
   public void overrideActivatedMods(List<ModVersionBean> modVersions) {

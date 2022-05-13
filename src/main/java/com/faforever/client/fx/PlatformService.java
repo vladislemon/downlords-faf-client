@@ -9,6 +9,7 @@ import com.sun.jna.platform.win32.WinUser;
 import com.sun.jna.platform.win32.WinUser.WINDOWPLACEMENT;
 import javafx.application.HostServices;
 import javafx.stage.DirectoryChooser;
+import javafx.stage.FileChooser;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.SystemUtils;
 import org.jetbrains.annotations.Nullable;
@@ -180,6 +181,30 @@ public class PlatformService {
         directoryChooser.setInitialDirectory(initialDirectory.toFile());
       }
       result.set(directoryChooser.showDialog(StageHolder.getStage().getScene().getWindow()));
+      waitForUserInput.countDown();
+    });
+    try {
+      waitForUserInput.await();
+    } catch (InterruptedException e) {
+      log.warn("Thread interrupted while waiting for user file selection", e);
+    }
+    return Optional.ofNullable(result.get()).map(File::toPath);
+  }
+
+  public Optional<Path> askForFile(String title) {
+    return askForFile(title, null);
+  }
+
+  public Optional<Path> askForFile(String title, Path initialDirectory) {
+    AtomicReference<File> result = new AtomicReference<>();
+    CountDownLatch waitForUserInput = new CountDownLatch(1);
+    JavaFxUtil.runLater(() -> {
+      FileChooser fileChooser = new FileChooser();
+      fileChooser.setTitle(title);
+      if (initialDirectory != null) {
+        fileChooser.setInitialDirectory(initialDirectory.toFile());
+      }
+      result.set(fileChooser.showOpenDialog(StageHolder.getStage().getScene().getWindow()));
       waitForUserInput.countDown();
     });
     try {

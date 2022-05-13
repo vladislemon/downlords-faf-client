@@ -163,7 +163,7 @@ public class PlayerService implements InitializingBean {
     return game.getTeams().values().stream()
         .flatMap(Collection::stream)
         .flatMap(playerName -> getPlayerByNameIfOnline(playerName).stream())
-        .collect(Collectors.toList());
+        .toList();
   }
 
   public Optional<Image> getCurrentAvatarByPlayerName(String name) {

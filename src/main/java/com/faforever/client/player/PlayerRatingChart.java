@@ -21,7 +21,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 /**
  * Player rating line chart with support for displaying more accurate values via the tooltip on mouse hover
@@ -114,7 +113,7 @@ public class PlayerRatingChart extends LineChart<Double, Double> {
     List<LineTo> lines = elements.stream()
         .filter((element) -> element instanceof LineTo)
         .map((element) -> (LineTo) element)
-        .collect(Collectors.toList());
+        .toList();
     if (lines.size() < 2) {
       return;
     }

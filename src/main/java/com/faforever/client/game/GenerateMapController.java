@@ -44,7 +44,6 @@ import java.text.ParseException;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
-import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 @Component
@@ -97,10 +96,10 @@ public class GenerateMapController implements Controller<Pane> {
   private Runnable onCloseButtonClickedListener;
   private final ObservableList<Integer> validTeamSizes = FXCollections.observableList(IntStream.range(0, 17)
       .filter(value -> value != 1)
-      .boxed().collect(Collectors.toList()));
+      .boxed().toList());
   private final FilteredList<Integer> selectableTeamSizes = new FilteredList<>(validTeamSizes);
   private final ObservableList<Integer> validSpawnCount = FXCollections.observableList(IntStream.range(2, 17)
-      .boxed().collect(Collectors.toList()));
+      .boxed().toList());
   private final FilteredList<Integer> selectableSpawnCounts = new FilteredList<>(validSpawnCount);
   public Spinner<Integer> numTeamsSpinner;
 

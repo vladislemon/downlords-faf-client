@@ -46,7 +46,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
 @Component
 @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
@@ -151,7 +150,7 @@ public class SearchController implements Controller<Pane> {
   public void setSortConfig(ObjectProperty<SortConfig> sortConfigObjectProperty) {
     List<Property> sortableProperties = searchableProperties.values().stream()
         .filter(Property::isSortable)
-        .collect(Collectors.toList());
+        .toList();
     sortPropertyComboBox.getItems().addAll(sortableProperties);
     sortOrderChoiceBox.getSelectionModel().select(sortConfigObjectProperty.get().getSortOrder());
 

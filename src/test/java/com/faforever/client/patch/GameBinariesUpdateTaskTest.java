@@ -20,7 +20,6 @@ import java.io.RandomAccessFile;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -79,7 +78,7 @@ public class GameBinariesUpdateTaskTest extends ServiceTest {
 
     instance.copyGameFilesToFafBinDirectory();
 
-    List<Path> resultFiles = Files.list(fafBinDirectory).filter(file -> !file.toFile().isDirectory()).collect(Collectors.toList());
+    List<Path> resultFiles = Files.list(fafBinDirectory).filter(file -> !file.toFile().isDirectory()).toList();
 
     // Expected all files except splash.png to be copied
     assertThat(resultFiles.size(), is(GameBinariesUpdateTaskImpl.BINARIES_TO_COPY.size()));
