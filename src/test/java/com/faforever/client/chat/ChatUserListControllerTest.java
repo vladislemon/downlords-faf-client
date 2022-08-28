@@ -18,13 +18,11 @@ import javafx.beans.binding.Bindings;
 import javafx.beans.property.MapProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.ReadOnlyObjectWrapper;
-import javafx.beans.property.SimpleBooleanProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.MapChangeListener;
 import javafx.collections.ObservableList;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
-import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Popup;
 import javafx.stage.Window;
@@ -81,8 +79,6 @@ public class ChatUserListControllerTest extends UITest {
   private PlayerService playerService;
   @Mock
   private ChatUserService chatUserService;
-  @Mock
-  private ChatUserFilterController chatUserFilterController;
 
   private ChatChannel chatChannel;
   private ChatPrefs chatPrefs;
@@ -103,9 +99,6 @@ public class ChatUserListControllerTest extends UITest {
     chatPrefs = preferences.getChat();
 
     when(preferencesService.getPreferences()).thenReturn(preferences);
-    when(uiService.loadFxml("theme/chat/user_filter.fxml")).thenReturn(chatUserFilterController);
-    when(chatUserFilterController.getRoot()).thenReturn(new Pane());
-    when(chatUserFilterController.filterAppliedProperty()).thenReturn(new SimpleBooleanProperty(false));
     when(chatService.connectionStateProperty()).thenReturn(connectionState);
 
     loadFxml("theme/chat/user_list.fxml", clazz -> instance);
@@ -404,18 +397,6 @@ public class ChatUserListControllerTest extends UITest {
     Window window = popupContent.getParent().getScene().getWindow();
     assertTrue(window.getClass().isAssignableFrom(Popup.class));
     assertTrue(window.isShowing());
-  }
-
-  @Test
-  public void testOnAdvancedFiltersToggleButtonClickedAndHidingPopup() {
-    runOnFxThreadAndWait(() -> getRoot().getChildren().add(instance.getRoot()));
-    runOnFxThreadAndWait(() -> instance.onAdvancedFiltersToggleButtonClicked());
-    Window window = chatUserFilterController.getRoot().getParent().getScene().getWindow();
-    assertTrue(window.getClass().isAssignableFrom(Popup.class));
-    assertTrue(window.isShowing());
-
-    runOnFxThreadAndWait(() -> instance.onAdvancedFiltersToggleButtonClicked());
-    assertFalse(window.isShowing());
   }
 
   @ParameterizedTest

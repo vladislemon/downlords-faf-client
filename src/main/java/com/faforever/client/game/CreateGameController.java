@@ -232,17 +232,12 @@ public class CreateGameController implements Controller<Pane> {
   }
 
   private void initMapFilterPopup() {
-    mapFilterPopup = new Popup();
-    mapFilterPopup.setAutoFix(false);
-    mapFilterPopup.setAutoHide(true);
-    mapFilterPopup.setAnchorLocation(AnchorLocation.CONTENT_BOTTOM_LEFT);
-
     mapFilterController = uiService.loadFxml("theme/play/map_filter.fxml");
     mapFilterController.setMapNameTextField(mapSearchTextField);
     mapFilterController.getFilterAppliedProperty()
         .addListener(((observable, old, newValue) -> mapFilterButton.setSelected(newValue)));
     mapFilterController.setFilteredMapList(filteredMaps);
-    mapFilterPopup.getContent().setAll(mapFilterController.getRoot());
+    mapFilterPopup = PopupUtil.createPopup(AnchorLocation.CONTENT_BOTTOM_LEFT, mapFilterController.getRoot());
   }
 
   private void validateTitle(String gameTitle) {

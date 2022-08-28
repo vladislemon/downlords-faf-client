@@ -1,16 +1,20 @@
 package com.faforever.client.game;
 
 import com.faforever.client.domain.GameBean;
+import com.faforever.client.filter.FilterName;
+import com.faforever.client.filter.GameFilterController;
 import com.faforever.client.fx.AbstractViewController;
 import com.faforever.client.fx.JavaFxUtil;
 import com.faforever.client.game.GamesTilesContainerController.TilesSortingOrder;
 import com.faforever.client.i18n.I18n;
 import com.faforever.client.main.event.HostGameEvent;
 import com.faforever.client.main.event.NavigateEvent;
+import com.faforever.client.preferences.Preferences;
 import com.faforever.client.preferences.PreferencesService;
 import com.faforever.client.theme.UiService;
 import com.faforever.client.ui.dialog.Dialog;
 import com.faforever.client.ui.preferences.event.GameDirectoryChooseEvent;
+import com.faforever.client.util.PopupUtil;
 import com.faforever.commons.lobby.GameStatus;
 import com.faforever.commons.lobby.GameType;
 import com.google.common.annotations.VisibleForTesting;
@@ -19,9 +23,9 @@ import javafx.beans.value.ChangeListener;
 import javafx.beans.value.WeakChangeListener;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
+import javafx.geometry.Bounds;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
-import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.ToggleButton;
@@ -29,7 +33,10 @@ import javafx.scene.control.ToggleGroup;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
+import javafx.stage.Popup;
+import javafx.stage.PopupWindow.AnchorLocation;
 import javafx.util.StringConverter;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.Nullable;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
@@ -39,15 +46,12 @@ import org.springframework.stereotype.Component;
 import java.nio.file.Path;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
-import java.util.function.Predicate;
 
 @Component
 @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 @Slf4j
+@RequiredArgsConstructor
 public class CustomGamesController extends AbstractViewController<Node> {
-
-  private static final Predicate<GameBean> OPEN_CUSTOM_GAMES_PREDICATE = gameInfoBean ->
-      gameInfoBean.getStatus() == GameStatus.OPEN && gameInfoBean.getGameType() == GameType.CUSTOM;
 
   private final UiService uiService;
   private final GameService gameService;
@@ -63,6 +67,7 @@ public class CustomGamesController extends AbstractViewController<Node> {
   public ToggleButton toggleGameDetailPaneButton;
   public ToggleGroup viewToggleGroup;
   public Button createGameButton;
+  public ToggleButton filterButton;
   public Pane gameViewContainer;
   public StackPane gamesRoot;
   public ScrollPane gameDetailPane;
@@ -71,23 +76,17 @@ public class CustomGamesController extends AbstractViewController<Node> {
   @VisibleForTesting
   FilteredList<GameBean> filteredItems;
 
-  public CheckBox showModdedGamesCheckBox;
-  public CheckBox showPasswordProtectedGamesCheckBox;
-  private final ChangeListener<Boolean> filterConditionsChangedListener = (observable, oldValue, newValue) -> updateFilteredItems();
-  private final ChangeListener<GameBean> gameChangeListener;
+  private Preferences preferences;
+  private GameFilterController gameFilterController;
+  private Popup gameFilterPopup;
 
-  public CustomGamesController(UiService uiService, GameService gameService, PreferencesService preferencesService,
-                               EventBus eventBus, I18n i18n) {
-    this.uiService = uiService;
-    this.gameService = gameService;
-    this.preferencesService = preferencesService;
-    this.eventBus = eventBus;
-    this.i18n = i18n;
-
-    gameChangeListener = (observable, oldValue, newValue) -> setSelectedGame(newValue);
-  }
+  private final ChangeListener<GameBean> gameChangeListener = (observable, oldValue, newValue) -> setSelectedGame(newValue);
 
   public void initialize() {
+    preferences = preferencesService.getPreferences();
+
+    initializeFilterController();
+
     JavaFxUtil.bind(createGameButton.disableProperty(), gameService.gameRunningProperty());
     getRoot().sceneProperty().addListener((observable, oldValue, newValue) -> {
       if (newValue == null) {
@@ -109,16 +108,12 @@ public class CustomGamesController extends AbstractViewController<Node> {
       }
     });
 
-    JavaFxUtil.bindBidirectional(showModdedGamesCheckBox.selectedProperty(), preferencesService.getPreferences().showModdedGamesProperty());
-    JavaFxUtil.bindBidirectional(showPasswordProtectedGamesCheckBox.selectedProperty(), preferencesService.getPreferences().showPasswordProtectedGamesProperty());
-
     ObservableList<GameBean> games = gameService.getGames();
-    filteredItems = new FilteredList<>(games, getGamePredicate());
+    filteredItems = new FilteredList<>(games);
+    JavaFxUtil.addAndTriggerListener(gameFilterController.getPredicateProperty(),
+        (observable, oldValue, newValue) -> filteredItems.setPredicate(newValue));
 
-    JavaFxUtil.addListener(preferencesService.getPreferences().showModdedGamesProperty(), new WeakChangeListener<>(filterConditionsChangedListener));
-    JavaFxUtil.addListener(preferencesService.getPreferences().showPasswordProtectedGamesProperty(), new WeakChangeListener<>(filterConditionsChangedListener));
-
-    if (tilesButton.getId().equals(preferencesService.getPreferences().getGamesViewMode())) {
+    if (tilesButton.getId().equals(preferences.getGamesViewMode())) {
       viewToggleGroup.selectToggle(tilesButton);
       tilesButton.getOnAction().handle(null);
     } else {
@@ -134,7 +129,7 @@ public class CustomGamesController extends AbstractViewController<Node> {
         }
         return;
       }
-      preferencesService.getPreferences().setGamesViewMode(((ToggleButton) newValue).getId());
+      preferences.setGamesViewMode(((ToggleButton) newValue).getId());
       preferencesService.storeInBackground();
     });
 
@@ -144,12 +139,34 @@ public class CustomGamesController extends AbstractViewController<Node> {
     setSelectedGame(null);
 
     toggleGameDetailPaneButton.selectedProperty().addListener(observable -> {
-      preferencesService.getPreferences().setShowGameDetailsSidePane(toggleGameDetailPaneButton.isSelected());
+      preferences.setShowGameDetailsSidePane(toggleGameDetailPaneButton.isSelected());
       preferencesService.storeInBackground();
     });
-    toggleGameDetailPaneButton.setSelected(preferencesService.getPreferences().isShowGameDetailsSidePane());
+    toggleGameDetailPaneButton.setSelected(preferences.isShowGameDetailsSidePane());
 
     eventBus.register(this);
+  }
+
+  private void initializeFilterController() {
+    gameFilterController = uiService.loadFxml("theme/filter/filter.fxml", GameFilterController.class);
+    gameFilterController.setDefaultPredicate(game -> game.getStatus() == GameStatus.OPEN && game.getGameType() == GameType.CUSTOM);
+    //gameFilterController.getFilterBuilder(filterBuilder -> {
+    //  JavaFxUtil.bindBidirectional(filterBuilder.getCheckbox(FilterName.PRIVATE_GAME).selectedProperty(), preferences.showPasswordProtectedGamesProperty());
+    //  JavaFxUtil.bindBidirectional(filterBuilder.getCheckbox(FilterName.WITH_MODS).selectedProperty(), preferences.showModdedGamesProperty());
+    //});
+    gameFilterController.setPrimaryFilters(
+        FilterName.PRIVATE_GAME,
+        FilterName.WITH_MODS
+    );
+    gameFilterController.setSecondaryFilters(
+        FilterName.PLAYER_NAME,
+        FilterName.FEATURE_MOD
+    );
+    gameFilterController.build();
+    gameFilterPopup = PopupUtil.createPopup(AnchorLocation.CONTENT_TOP_LEFT, gameFilterController.getRoot());
+
+    JavaFxUtil.addAndTriggerListener(gameFilterController.getFilterStateProperty(), (observable, oldValue, newValue) -> filterButton.setSelected(newValue));
+    JavaFxUtil.addAndTriggerListener(filterButton.selectedProperty(), observable -> filterButton.setSelected(gameFilterController.getFilterState()));
   }
 
   @Override
@@ -159,26 +176,12 @@ public class CustomGamesController extends AbstractViewController<Node> {
     }
   }
 
-  private void updateFilteredItems() {
-    preferencesService.storeInBackground();
-    JavaFxUtil.runLater(() -> filteredItems.setPredicate(getGamePredicate()));
-  }
-
-  private Predicate<GameBean> getGamePredicate() {
-    boolean showPasswordProtectedGames = showPasswordProtectedGamesCheckBox.isSelected();
-    boolean showModdedGames = showModdedGamesCheckBox.isSelected();
-
-    return (OPEN_CUSTOM_GAMES_PREDICATE.and(gameInfoBean ->
-        (showPasswordProtectedGames || !gameInfoBean.isPasswordProtected())
-            && (showModdedGames || gameInfoBean.getSimMods().isEmpty())));
-  }
-
   public void onCreateGameButtonClicked() {
     onCreateGame(null);
   }
 
   private void onCreateGame(@Nullable String mapFolderName) {
-    if (preferencesService.getPreferences().getForgedAlliance().getInstallationPath() == null) {
+    if (preferences.getForgedAlliance().getInstallationPath() == null) {
       CompletableFuture<Path> gameDirectoryFuture = new CompletableFuture<>();
       eventBus.post(new GameDirectoryChooseEvent(gameDirectoryFuture));
       gameDirectoryFuture.thenAccept(path -> Optional.ofNullable(path).ifPresent(path1 -> onCreateGame(null)));
@@ -239,5 +242,14 @@ public class CustomGamesController extends AbstractViewController<Node> {
   @VisibleForTesting
   void setFilteredList(ObservableList<GameBean> games) {
     filteredItems = new FilteredList<>(games, s -> true);
+  }
+
+  public void onFilterButtonClicked() {
+    if (gameFilterPopup.isShowing()) {
+      gameFilterPopup.hide();
+    } else {
+      Bounds screenBounds = filterButton.localToScreen(filterButton.getBoundsInLocal());
+      gameFilterPopup.show(filterButton.getScene().getWindow(), screenBounds.getMinX(), screenBounds.getMaxY() + 10);
+    }
   }
 }

@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.SplitPane?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.VBox?>
+
+<?import javafx.scene.control.Tooltip?>
+<SplitPane fx:id="root" dividerPositions="0.5" xmlns="http://javafx.com/javafx/18" xmlns:fx="http://javafx.com/fxml/1"
+           styleClass="filter-popup">
+    <items>
+        <AnchorPane SplitPane.resizableWithParent="false">
+            <children>
+                <VBox spacing="4.0">
+                    <children>
+                        <Button fx:id="resetAllButton" disable="true" mnemonicParsing="false"
+                                onAction="#onResetAllButtonClicked">
+                            <graphic>
+                                <Region styleClass="icon, icon16x16, spinner-icon"/>
+                            </graphic>
+                            <tooltip>
+                                <Tooltip text="%resetAll"/>
+                            </tooltip>
+                        </Button>
+                        <Button fx:id="filterModeButton" mnemonicParsing="false" onAction="#onFilterModeButtonClicked">
+                            <graphic>
+                                <Region fx:id="filterModeIcon" styleClass="icon, icon16x16, circle-down-icon" />
+                            </graphic>
+                        </Button>
+                    </children>
+                </VBox>
+            </children>
+            <padding>
+                <Insets right="4.0"/>
+            </padding>
+        </AnchorPane>
+        <AnchorPane SplitPane.resizableWithParent="false">
+            <VBox spacing="4.0">
+                <children>
+                    <VBox fx:id="primaryFiltersContent" spacing="4.0">
+                    </VBox>
+                    <VBox fx:id="secondaryFiltersContent" spacing="4.0" visible="false">
+                    </VBox>
+                </children>
+            </VBox>
+        </AnchorPane>
+    </items>
+</SplitPane>

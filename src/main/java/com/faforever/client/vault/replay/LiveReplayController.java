@@ -1,8 +1,11 @@
 package com.faforever.client.vault.replay;
 
 import com.faforever.client.domain.GameBean;
+import com.faforever.client.filter.FilterName;
+import com.faforever.client.filter.GameFilterController;
 import com.faforever.client.fx.AbstractViewController;
 import com.faforever.client.fx.DecimalCell;
+import com.faforever.client.fx.JavaFxUtil;
 import com.faforever.client.fx.NodeTableCell;
 import com.faforever.client.fx.StringCell;
 import com.faforever.client.game.GameService;
@@ -12,23 +15,27 @@ import com.faforever.client.map.MapService;
 import com.faforever.client.map.MapService.PreviewSize;
 import com.faforever.client.theme.UiService;
 import com.faforever.client.ui.table.NoSelectionModelTableView;
+import com.faforever.client.util.PopupUtil;
 import com.faforever.client.util.TimeService;
 import com.faforever.commons.lobby.GameStatus;
-import com.faforever.commons.lobby.GameType;
 import com.google.common.base.Joiner;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.value.ObservableValue;
-import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
 import javafx.collections.transformation.SortedList;
+import javafx.geometry.Bounds;
 import javafx.scene.Node;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableColumn.CellDataFeatures;
 import javafx.scene.control.TableColumn.SortType;
 import javafx.scene.control.TableView;
+import javafx.scene.control.ToggleButton;
 import javafx.scene.image.Image;
+import javafx.scene.layout.VBox;
+import javafx.stage.Popup;
+import javafx.stage.PopupWindow.AnchorLocation;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
@@ -53,7 +60,10 @@ public class LiveReplayController extends AbstractViewController<Node> {
   private final I18n i18n;
   private final MapService mapService;
   private final TimeService timeService;
-  public TableView<GameBean> liveReplayControllerRoot;
+
+  public VBox root;
+  public ToggleButton filterButton;
+  public TableView<GameBean> liveReplayTableView;
   public TableColumn<GameBean, Image> mapPreviewColumn;
   public TableColumn<GameBean, OffsetDateTime> startTimeColumn;
   public TableColumn<GameBean, String> gameTitleColumn;
@@ -63,17 +73,44 @@ public class LiveReplayController extends AbstractViewController<Node> {
   public TableColumn<GameBean, String> hostColumn;
   public TableColumn<GameBean, GameBean> watchColumn;
 
+  private GameFilterController gameFilterController;
+  private Popup gameFilterPopup;
+
   @Override
   public void initialize() {
-    liveReplayControllerRoot.setSelectionModel(new NoSelectionModelTableView<>(liveReplayControllerRoot));
-    initializeGameTable(gameService.getGames());
+    liveReplayTableView.setSelectionModel(new NoSelectionModelTableView<>(liveReplayTableView));
+    initializeFilterController();
+    initializeGameTable();
   }
 
-  private void initializeGameTable(ObservableList<GameBean> games) {
-    FilteredList<GameBean> filteredGameList = new FilteredList<>(games);
-    filteredGameList.setPredicate(game -> game.getStatus() == GameStatus.PLAYING);
+  private void initializeFilterController() {
+    gameFilterController = uiService.loadFxml("theme/filter/filter.fxml", GameFilterController.class);;
+    gameFilterController.setDefaultPredicate(game -> game.getStatus() == GameStatus.PLAYING);
+    gameFilterController.setPrimaryFilters(
+        FilterName.CUSTOM_GAME,
+        FilterName.MATCHMAKER,
+        FilterName.COOP_GAME,
+        FilterName.WITH_MODS
+    );
+    gameFilterController.setSecondaryFilters(
+        FilterName.PLAYER_NAME,
+        FilterName.FEATURE_MOD
+    );
+    gameFilterController.build();
+
+    gameFilterPopup = PopupUtil.createPopup(AnchorLocation.CONTENT_TOP_LEFT, gameFilterController.getRoot());
+
+    JavaFxUtil.addAndTriggerListener(gameFilterController.getFilterStateProperty(), (observable, oldValue, newValue) -> filterButton.setSelected(newValue));
+    JavaFxUtil.addAndTriggerListener(filterButton.selectedProperty(), observable -> filterButton.setSelected(gameFilterController.getFilterState()));
+  }
+
+  private void initializeGameTable() {
+    FilteredList<GameBean> filteredGameList = new FilteredList<>(gameService.getGames());
+    JavaFxUtil.addAndTriggerListener(gameFilterController.getPredicateProperty(),
+        (observable, oldValue, newValue) -> filteredGameList.setPredicate(newValue));
+
     SortedList<GameBean> sortedList = new SortedList<>(filteredGameList);
-    sortedList.comparatorProperty().bind(liveReplayControllerRoot.comparatorProperty());
+    sortedList.comparatorProperty().bind(liveReplayTableView.comparatorProperty());
 
     mapPreviewColumn.setCellFactory(param -> new MapPreviewTableCell(uiService));
     mapPreviewColumn.setCellValueFactory(param -> Bindings.createObjectBinding(
@@ -97,11 +134,11 @@ public class LiveReplayController extends AbstractViewController<Node> {
     watchColumn.setCellValueFactory(param -> new SimpleObjectProperty<>(param.getValue()));
     watchColumn.setCellFactory(param -> new NodeTableCell<>(this::watchReplayButton));
 
-    liveReplayControllerRoot.setItems(sortedList);
+    liveReplayTableView.setItems(sortedList);
 
     startTimeColumn.setSortType(SortType.DESCENDING);
-    liveReplayControllerRoot.getSortOrder().add(startTimeColumn);
-    liveReplayControllerRoot.sort();
+    liveReplayTableView.getSortOrder().add(startTimeColumn);
+    liveReplayTableView.sort();
   }
 
   private Node watchReplayButton(GameBean game) {
@@ -112,7 +149,7 @@ public class LiveReplayController extends AbstractViewController<Node> {
 
   @Override
   public Node getRoot() {
-    return liveReplayControllerRoot;
+    return root;
   }
 
   @NotNull
@@ -128,5 +165,14 @@ public class LiveReplayController extends AbstractViewController<Node> {
       return new SimpleStringProperty(i18n.get("game.mods.twoAndMore", modNames.get(0), simMods.size() - 1));
     }
     return new SimpleStringProperty(Joiner.on(i18n.get("textSeparator")).join(modNames));
+  }
+
+  public void onFilterButtonClicked() {
+    if (gameFilterPopup.isShowing()) {
+      gameFilterPopup.hide();
+    } else {
+      Bounds screenBounds = filterButton.localToScreen(filterButton.getBoundsInLocal());
+      gameFilterPopup.show(filterButton.getScene().getWindow(), screenBounds.getMinX(), screenBounds.getMaxY() + 10);
+    }
   }
 }

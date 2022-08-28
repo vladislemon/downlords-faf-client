@@ -4,6 +4,7 @@ import com.faforever.client.builders.ChatChannelUserBuilder;
 import com.faforever.client.builders.GameBeanBuilder;
 import com.faforever.client.builders.LeaderboardRatingMapBuilder;
 import com.faforever.client.builders.PlayerBeanBuilder;
+import com.faforever.client.filter.ChatUserFilterController;
 import com.faforever.client.i18n.I18n;
 import com.faforever.client.player.CountryFlagService;
 import com.faforever.client.player.SocialStatus;
