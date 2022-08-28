@@ -19,7 +19,6 @@ import javafx.beans.WeakInvalidationListener;
 import javafx.beans.binding.BooleanBinding;
 import javafx.beans.property.MapProperty;
 import javafx.beans.value.ChangeListener;
-import javafx.beans.value.WeakChangeListener;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.MapChangeListener;
@@ -149,9 +148,6 @@ public class ChatUserListController implements Controller<VBox>, InitializingBea
         }
         updateUserCount();
       });
-
-  private final ChangeListener<Boolean> filterAppliedListener = (observable, oldValue, newValue) ->
-      advancedFiltersToggleButton.setSelected(newValue);
 
   @SuppressWarnings("FieldCanBeLocal")
   private MapChangeListener<String, ObservableList<ChatUserCategory>> channelNameToHiddenCategoriesListener;
@@ -376,8 +372,11 @@ public class ChatUserListController implements Controller<VBox>, InitializingBea
     chatUserFilterController = uiService.loadFxml("theme/filter/filter.fxml", ChatUserFilterController.class);
     chatUserFilterController.addCustomFilter(FilterName.PLAYER_NAME, searchUsernameTextField.textProperty(),(text, item) -> item.isCategory() || text.isEmpty()
         || item.getUser().stream().anyMatch(user -> StringUtils.containsIgnoreCase(user.getUsername(), text)));
-    chatUserFilterController.setPrimaryFilters(FilterName.CLAN);
-    chatUserFilterController.build();
+    chatUserFilterController.setPrimaryFilters(
+        FilterName.CLAN,
+        FilterName.GAME_STATUS
+    );
+    chatUserFilterController.completeSetting();
 
 
     JavaFxUtil.addAndTriggerListener(chatUserFilterController.getFilterStateProperty(), (observable, oldValue, newValue) -> advancedFiltersToggleButton.setSelected(newValue));

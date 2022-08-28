@@ -96,7 +96,7 @@ public class LiveReplayController extends AbstractViewController<Node> {
         FilterName.PLAYER_NAME,
         FilterName.FEATURE_MOD
     );
-    gameFilterController.build();
+    gameFilterController.completeSetting();
 
     gameFilterPopup = PopupUtil.createPopup(AnchorLocation.CONTENT_TOP_LEFT, gameFilterController.getRoot());
 

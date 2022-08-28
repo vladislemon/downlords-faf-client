@@ -14,7 +14,6 @@ import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.collections.ObservableMap;
-import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.SplitPane;
 import javafx.scene.layout.Region;
@@ -122,7 +121,7 @@ public abstract class AbstractFilterController<T> implements Controller<SplitPan
     content.getChildren().setAll(controllers.stream().map(Controller::getRoot).toList());
   }
 
-  public final void build() {
+  public final void completeSetting() {
     build(filterBuilder);
   }
 
