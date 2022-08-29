@@ -44,7 +44,7 @@ public class RangeSliderFilterController<T> extends AbstractFilterNodeController
     rangeSlider.setHighValue(highValue);
 
     JavaFxUtil.bind(root.textProperty(), Bindings.createStringBinding(() -> i18n.get("filter.range", defaultText,
-        rangeSlider.getLowValue(), rangeSlider.getHighValue()), rangeSlider.lowValueProperty(), rangeSlider.highValueProperty()));
+        ((int) rangeSlider.getLowValue()), ((int) rangeSlider.getHighValue())), rangeSlider.lowValueProperty(), rangeSlider.highValueProperty()));
   }
 
   @Override

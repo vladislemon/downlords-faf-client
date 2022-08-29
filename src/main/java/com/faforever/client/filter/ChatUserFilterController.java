@@ -49,7 +49,7 @@ public class ChatUserFilterController extends AbstractFilterController<ListItem>
             (selectedStatus, item) -> item.isCategory() || selectedStatus.isEmpty() ||
                 item.getUser().map(ChatChannelUser::getGameStatus).filter(Optional::isPresent).map(Optional::get).stream().anyMatch(selectedStatus::contains))
 
-        .rangeSlider(FilterName.PLAYER_RATING, i18n.get("game.globalRating"), -9999, -99999, 99999, 9999,
+        .rangeSlider(FilterName.PLAYER_RATING, i18n.get("game.globalRating"), -9999, -9999, 9999, 9999,
             (pair, item) ->
                 item.isCategory() || (pair.getKey() <= -9999 && pair.getValue() >= 9999) ||
                 item.getUser().map(ChatChannelUser::getPlayer)
