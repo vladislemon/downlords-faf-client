@@ -18,7 +18,6 @@ import javafx.beans.InvalidationListener;
 import javafx.beans.WeakInvalidationListener;
 import javafx.beans.binding.BooleanBinding;
 import javafx.beans.property.MapProperty;
-import javafx.beans.value.ChangeListener;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.MapChangeListener;
@@ -373,9 +372,9 @@ public class ChatUserListController implements Controller<VBox>, InitializingBea
     chatUserFilterController.addCustomFilter(FilterName.PLAYER_NAME, searchUsernameTextField.textProperty(),(text, item) -> item.isCategory() || text.isEmpty()
         || item.getUser().stream().anyMatch(user -> StringUtils.containsIgnoreCase(user.getUsername(), text)));
     chatUserFilterController.setPrimaryFilters(
-        FilterName.CLAN,
+        FilterName.GAME_STATUS,
         FilterName.PLAYER_RATING,
-        FilterName.GAME_STATUS
+        FilterName.CLAN
     );
     chatUserFilterController.completeSetting();
 

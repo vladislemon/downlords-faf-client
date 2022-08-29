@@ -14,6 +14,7 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import java.util.Collection;
+import java.util.List;
 
 
 @Component
@@ -35,6 +36,23 @@ public class GameFilterController extends AbstractFilterController<GameBean> {
     }
   };
 
+  private final StringConverter<GameType> gameTypeConverter = new StringConverter<>() {
+    @Override
+    public String toString(GameType object) {
+      return i18n.get(switch (object) {
+        case CUSTOM -> "customGame";
+        case MATCHMAKER -> "matchmaker";
+        case COOP -> "coopGame";
+        default -> throw new IllegalArgumentException(object + " should not be used");
+      });
+    }
+
+    @Override
+    public GameType fromString(String string) {
+      throw new UnsupportedOperationException("Not supported");
+    }
+  };
+
   public GameFilterController(UiService uiService, I18n i18n, ModService modService) {
     super(uiService, i18n);
     this.modService = modService;
@@ -44,15 +62,13 @@ public class GameFilterController extends AbstractFilterController<GameBean> {
   protected void build(FilterBuilder<GameBean> filterBuilder) {
     filterBuilder
 
-        .checkbox(FilterName.CUSTOM_GAME, i18n.get("customGames"), (selected, game) -> selected || game.getGameType() != GameType.CUSTOM)
+        .multiCheckbox(FilterName.GAME_TYPE, i18n.get("gameType"), List.of(GameType.CUSTOM, GameType.MATCHMAKER, GameType.COOP), gameTypeConverter,
+            (selectedGameTypes, game) -> selectedGameTypes.isEmpty() || selectedGameTypes.contains(game.getGameType()))
 
-        .checkbox(FilterName.COOP_GAME, i18n.get("coopGames"), (selected, game) -> selected || game.getGameType() != GameType.COOP)
+        .checkbox(FilterName.WITH_MODS, i18n.get("withMods"), (selected, game) -> selected || game.getSimMods()
+            .isEmpty())
 
-        .checkbox(FilterName.MATCHMAKER, i18n.get("matchmaker"), (selected, game) -> selected || game.getGameType() != GameType.MATCHMAKER)
-
-        .checkbox(FilterName.WITH_MODS, i18n.get("withMods"), (selected, game) -> selected || game.getSimMods().isEmpty())
-
-        .checkbox(FilterName.PRIVATE_GAME, i18n.get("privateGames"), (selected, game) -> selected || !game.isPasswordProtected())
+        .checkbox(FilterName.PRIVATE_GAME, i18n.get("privateGame"), (selected, game) -> selected || !game.isPasswordProtected())
 
         .textField(FilterName.PLAYER_NAME, i18n.get("game.player.username"), (text, game) -> text.isEmpty() || game.getTeams()
             .values()

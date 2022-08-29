@@ -87,9 +87,7 @@ public class LiveReplayController extends AbstractViewController<Node> {
     gameFilterController = uiService.loadFxml("theme/filter/filter.fxml", GameFilterController.class);;
     gameFilterController.setDefaultPredicate(game -> game.getStatus() == GameStatus.PLAYING);
     gameFilterController.setPrimaryFilters(
-        FilterName.CUSTOM_GAME,
-        FilterName.MATCHMAKER,
-        FilterName.COOP_GAME,
+        FilterName.GAME_TYPE,
         FilterName.WITH_MODS
     );
     gameFilterController.setSecondaryFilters(

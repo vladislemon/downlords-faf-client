@@ -33,23 +33,37 @@ public class RangeSliderFilterController<T> extends AbstractFilterNodeController
   private double minValue;
   private double maxValue;
 
-  public void setRangeSliderValues(double minValue, double lowValue, double highValue, double maxValue) {
+  @Override
+  public void initialize() {
+    rangeSlider.setShowTickLabels(true);
+    rangeSlider.setShowTickMarks(true);
+  }
+
+  public void setMinValue(double minValue) {
     this.minValue = minValue;
-    this.maxValue = maxValue;
-
     rangeSlider.setMin(minValue);
-    rangeSlider.setLowValue(lowValue);
+    rangeSlider.setLowValue(minValue);
+    JavaFxUtil.bindTextFieldAndRangeSlide(lowValueTextField, rangeSlider, false);
+  }
 
+  public void setMaxValue(double maxValue) {
+    this.maxValue = maxValue;
     rangeSlider.setMax(maxValue);
-    rangeSlider.setHighValue(highValue);
-
-    JavaFxUtil.bind(root.textProperty(), Bindings.createStringBinding(() -> i18n.get("filter.range", defaultText,
-        ((int) rangeSlider.getLowValue()), ((int) rangeSlider.getHighValue())), rangeSlider.lowValueProperty(), rangeSlider.highValueProperty()));
+    rangeSlider.setHighValue(maxValue);
+    JavaFxUtil.bindTextFieldAndRangeSlide(highValueTextField, rangeSlider, true);
   }
 
   @Override
   public boolean hasDefaultValue() {
-    return rangeSlider.getLowValue() == minValue && rangeSlider.getHighValue() == maxValue;
+    return hasLowDefaultValue() && hasHighDefaultValue();
+  }
+
+  private boolean hasLowDefaultValue() {
+    return rangeSlider.getLowValue() == minValue;
+  }
+
+  private boolean hasHighDefaultValue() {
+    return rangeSlider.getHighValue() == maxValue;
   }
 
   @Override
@@ -60,7 +74,15 @@ public class RangeSliderFilterController<T> extends AbstractFilterNodeController
 
   public void setText(String text) {
     this.defaultText = text;
-    root.setText(text);
+    JavaFxUtil.bind(root.textProperty(), Bindings.createStringBinding(this::getFormattedText, rangeSlider.lowValueProperty(), rangeSlider.highValueProperty()));
+  }
+
+  private String getFormattedText() {
+    return i18n.get("filter.range",
+        defaultText,
+        hasLowDefaultValue() ? "" : ((int) rangeSlider.getLowValue()),
+        hasHighDefaultValue() ? "" : ((int) rangeSlider.getHighValue())
+    );
   }
 
   @Override

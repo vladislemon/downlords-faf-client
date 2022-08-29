@@ -2,18 +2,16 @@ package com.faforever.client.filter;
 
 public enum FilterName {
 
-  CUSTOM_GAME,
-  COOP_GAME,
-  MATCHMAKER,
+  GAME_TYPE,
   PRIVATE_GAME,
   WITH_MODS,
 
   PLAYER_NAME,
 
-  CLAN,
-  PLAYER_RATING,
-  COUNTRY,
   GAME_STATUS,
+  PLAYER_RATING,
+  CLAN,
+  COUNTRY_CODE,
 
   FEATURE_MOD
 }

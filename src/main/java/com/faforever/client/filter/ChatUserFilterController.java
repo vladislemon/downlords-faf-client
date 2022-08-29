@@ -14,11 +14,13 @@ import org.springframework.stereotype.Component;
 
 import java.util.Arrays;
 import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
 
 @Component
 @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 public class ChatUserFilterController extends AbstractFilterController<ListItem> {
+
+  private final int MIN_RATING = -1000;
+  private final int MAX_RATING = 3000;
 
   private final StringConverter<PlayerStatus> playerStatusConverter = new StringConverter<>() {
     @Override
@@ -41,18 +43,26 @@ public class ChatUserFilterController extends AbstractFilterController<ListItem>
     filterBuilder
 
         .textField(FilterName.CLAN, i18n.get("chat.filter.clan"),
-            (text, item) -> item.isCategory() || text.isEmpty() || item.getUser().filter(user -> user.getClanTag().isPresent())
-                .map(ChatChannelUser::getClanTag).map(Optional::get).stream().anyMatch(clan -> StringUtils.containsIgnoreCase(clan, text)))
+            (text, item) -> item.isCategory() || text.isEmpty() || item.getUser()
+                .filter(user -> user.getClanTag().isPresent())
+                .map(ChatChannelUser::getClanTag)
+                .map(Optional::get)
+                .stream()
+                .anyMatch(clan -> StringUtils.containsIgnoreCase(clan, text)))
 
-        .multiCheckbox(FilterName.GAME_STATUS, i18n.get("game.gameStatus"),
-            CompletableFuture.completedFuture(Arrays.stream(PlayerStatus.values()).toList()), playerStatusConverter,
-            (selectedStatus, item) -> item.isCategory() || selectedStatus.isEmpty() ||
-                item.getUser().map(ChatChannelUser::getGameStatus).filter(Optional::isPresent).map(Optional::get).stream().anyMatch(selectedStatus::contains))
+        .multiCheckbox(FilterName.GAME_STATUS, i18n.get("game.gameStatus"), Arrays.stream(PlayerStatus.values())
+                .toList(),
+            playerStatusConverter, (selectedStatus, item) -> item.isCategory() || selectedStatus.isEmpty() ||
+                item.getUser()
+                    .map(ChatChannelUser::getGameStatus)
+                    .filter(Optional::isPresent)
+                    .map(Optional::get)
+                    .stream()
+                    .anyMatch(selectedStatus::contains))
 
-        .rangeSlider(FilterName.PLAYER_RATING, i18n.get("game.globalRating"), -9999, -9999, 9999, 9999,
+        .rangeSlider(FilterName.PLAYER_RATING, i18n.get("game.globalRating"), MIN_RATING, MAX_RATING,
             (pair, item) ->
-                item.isCategory() || (pair.getKey() <= -9999 && pair.getValue() >= 9999) ||
-                item.getUser().map(ChatChannelUser::getPlayer)
+                item.isCategory() || item.getUser().map(ChatChannelUser::getPlayer)
                     .filter(Optional::isPresent)
                     .map(Optional::get)
                     .map(player -> RatingUtil.getRating(player.getLeaderboardRatings().get("global")))
@@ -60,6 +70,4 @@ public class ChatUserFilterController extends AbstractFilterController<ListItem>
 
         .build();
   }
-
-
 }

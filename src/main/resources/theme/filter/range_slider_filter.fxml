@@ -7,6 +7,7 @@
 <?import javafx.scene.layout.VBox?>
 <?import org.controlsfx.control.RangeSlider?>
 <?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Label?>
 <MenuButton xmlns:fx="http://javafx.com/fxml/1" fx:id="root"
             xmlns="http://javafx.com/javafx/8.0.121"
             fx:controller="com.faforever.client.filter.RangeSliderFilterController" styleClass="query-filter">
@@ -14,8 +15,9 @@
         <CustomMenuItem hideOnClick="false" styleClass="filter-popup">
             <content>
                 <VBox spacing="6.0">
-                    <HBox spacing="6.0">
-                        <TextField fx:id="lowValueTextField" promptText="%search.lowValue"/>
+                    <HBox spacing="6.0" alignment="CENTER">
+                        <TextField alignment="CENTER_RIGHT" fx:id="lowValueTextField" promptText="%search.lowValue"/>
+                        <Label text="-"/>
                         <TextField fx:id="highValueTextField" promptText="%search.highValue"/>
                     </HBox>
                     <RangeSlider fx:id="rangeSlider"/>

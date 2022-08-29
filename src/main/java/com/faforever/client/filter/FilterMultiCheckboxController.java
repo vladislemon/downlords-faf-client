@@ -2,6 +2,8 @@ package com.faforever.client.filter;
 
 import com.faforever.client.fx.JavaFxUtil;
 import com.faforever.client.i18n.I18n;
+import com.faforever.client.ui.list.NoFocusModelListView;
+import com.faforever.client.ui.list.NoSelectionModelListView;
 import javafx.beans.InvalidationListener;
 import javafx.beans.Observable;
 import javafx.beans.binding.Bindings;
@@ -33,6 +35,12 @@ public class FilterMultiCheckboxController<U, T> extends AbstractFilterNodeContr
   private StringConverter<U> converter;
   private List<U> sourceList;
   private String defaultText;
+
+  @Override
+  public void initialize() {
+    listView.setSelectionModel(new NoSelectionModelListView<>());
+    listView.setFocusModel(new NoFocusModelListView<>());
+  }
 
   @Override
   public boolean hasDefaultValue() {
