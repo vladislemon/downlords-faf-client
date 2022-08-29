@@ -11,8 +11,7 @@ public enum FilterName {
   PLAYER_NAME,
 
   CLAN,
-  MIN_RATING,
-  MAX_RATING,
+  PLAYER_RATING,
   COUNTRY,
   GAME_STATUS,
 

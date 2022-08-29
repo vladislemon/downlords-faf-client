@@ -11,6 +11,7 @@ import javafx.scene.control.CheckBox;
 import javafx.scene.control.CustomMenuItem;
 import javafx.scene.control.MenuButton;
 import javafx.scene.control.TextField;
+import javafx.util.Pair;
 import javafx.util.StringConverter;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -65,6 +66,16 @@ public class FilterBuilder<T> {
       controller.setItems(items1);
       controller.registerListener(filter);
     });
+    controllers.add(controller);
+    return this;
+  }
+
+  public FilterBuilder<T> rangeSlider(FilterName filterName, String text, double minValue, double lowValue, double highValue, double maxValue, BiFunction<Pair<Integer, Integer>, T, Boolean> filter) {
+    RangeSliderFilterController<T> controller = uiService.loadFxml("theme/filter/range_slider_filter.fxml");
+    controller.setFilterName(filterName);
+    controller.setText(text);
+    controller.setRangeSliderValues(minValue, lowValue, highValue, maxValue);
+    controller.registerListener(filter);
     controllers.add(controller);
     return this;
   }

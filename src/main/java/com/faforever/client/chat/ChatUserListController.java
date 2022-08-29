@@ -374,6 +374,7 @@ public class ChatUserListController implements Controller<VBox>, InitializingBea
         || item.getUser().stream().anyMatch(user -> StringUtils.containsIgnoreCase(user.getUsername(), text)));
     chatUserFilterController.setPrimaryFilters(
         FilterName.CLAN,
+        FilterName.PLAYER_RATING,
         FilterName.GAME_STATUS
     );
     chatUserFilterController.completeSetting();

@@ -5,6 +5,7 @@ import com.faforever.client.chat.ListItem;
 import com.faforever.client.game.PlayerStatus;
 import com.faforever.client.i18n.I18n;
 import com.faforever.client.theme.UiService;
+import com.faforever.client.util.RatingUtil;
 import javafx.util.StringConverter;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
@@ -47,6 +48,15 @@ public class ChatUserFilterController extends AbstractFilterController<ListItem>
             CompletableFuture.completedFuture(Arrays.stream(PlayerStatus.values()).toList()), playerStatusConverter,
             (selectedStatus, item) -> item.isCategory() || selectedStatus.isEmpty() ||
                 item.getUser().map(ChatChannelUser::getGameStatus).filter(Optional::isPresent).map(Optional::get).stream().anyMatch(selectedStatus::contains))
+
+        .rangeSlider(FilterName.PLAYER_RATING, i18n.get("game.globalRating"), -9999, -99999, 99999, 9999,
+            (pair, item) ->
+                item.isCategory() || (pair.getKey() <= -9999 && pair.getValue() >= 9999) ||
+                item.getUser().map(ChatChannelUser::getPlayer)
+                    .filter(Optional::isPresent)
+                    .map(Optional::get)
+                    .map(player -> RatingUtil.getRating(player.getLeaderboardRatings().get("global")))
+                    .stream().anyMatch(rating -> rating >= pair.getKey() && rating <= pair.getValue()))
 
         .build();
   }
