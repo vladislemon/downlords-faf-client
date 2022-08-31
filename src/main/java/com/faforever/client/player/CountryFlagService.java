@@ -3,6 +3,7 @@ package com.faforever.client.player;
 import com.faforever.client.exception.AssetLoadException;
 import com.faforever.client.i18n.I18n;
 import javafx.scene.image.Image;
+import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.Cacheable;
@@ -42,7 +43,7 @@ public class CountryFlagService {
   }
 
   @Cacheable(value = COUNTRY_NAMES, sync = true)
-  public List<String> getCountries(String startsWith) {
+  public List<String> getISOCountries(String startsWith) {
     if (startsWith == null) {
       return Arrays.stream(Locale.getISOCountries()).collect(Collectors.toList());
     }
@@ -51,6 +52,13 @@ public class CountryFlagService {
     return Arrays.stream(Locale.getISOCountries())
         .filter(country -> matchCountry(country, startsWithLowered))
         .collect(Collectors.toList());
+  }
+
+  public List<Country> getCountries() {
+    return getISOCountries(null).stream()
+        .map(code -> new Locale(Locale.ENGLISH.getLanguage(), code))
+        .map(locale -> new Country(locale.getCountry(), locale.getDisplayCountry()))
+        .toList();
   }
 
   private boolean matchCountry(String countryCode, String startsWithLowered) {
@@ -84,5 +92,8 @@ public class CountryFlagService {
     } catch (IOException e) {
       throw new AssetLoadException("Could not open classpath resource " + classPathResource.getPath(), e, "flag.loadError", country);
     }
+  }
+
+  public record Country(String code, String displayName) {
   }
 }

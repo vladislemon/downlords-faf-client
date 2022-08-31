@@ -374,7 +374,8 @@ public class ChatUserListController implements Controller<VBox>, InitializingBea
     chatUserFilterController.setPrimaryFilters(
         FilterName.GAME_STATUS,
         FilterName.PLAYER_RATING,
-        FilterName.CLAN
+        FilterName.CLAN,
+        FilterName.COUNTRY_CODE
     );
     chatUserFilterController.completeSetting();
 

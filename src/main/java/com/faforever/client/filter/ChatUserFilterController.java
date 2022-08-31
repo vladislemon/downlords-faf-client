@@ -2,8 +2,11 @@ package com.faforever.client.filter;
 
 import com.faforever.client.chat.ChatChannelUser;
 import com.faforever.client.chat.ListItem;
+import com.faforever.client.domain.PlayerBean;
 import com.faforever.client.game.PlayerStatus;
 import com.faforever.client.i18n.I18n;
+import com.faforever.client.player.CountryFlagService;
+import com.faforever.client.player.CountryFlagService.Country;
 import com.faforever.client.theme.UiService;
 import com.faforever.client.util.RatingUtil;
 import javafx.util.StringConverter;
@@ -18,6 +21,8 @@ import java.util.Optional;
 @Component
 @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 public class ChatUserFilterController extends AbstractFilterController<ListItem> {
+
+  private final CountryFlagService countryFlagService;
 
   private final int MIN_RATING = -1000;
   private final int MAX_RATING = 3000;
@@ -34,8 +39,21 @@ public class ChatUserFilterController extends AbstractFilterController<ListItem>
     }
   };
 
-  protected ChatUserFilterController(UiService uiService, I18n i18n) {
+  private final StringConverter<Country> countryConverter = new StringConverter<>() {
+    @Override
+    public String toString(Country object) {
+      return String.format("%s [%s]", object.displayName(), object.code());
+    }
+
+    @Override
+    public Country fromString(String string) {
+      throw new UnsupportedOperationException("Not supported");
+    }
+  };
+
+  protected ChatUserFilterController(UiService uiService, I18n i18n, CountryFlagService countryFlagService) {
     super(uiService, i18n);
+    this.countryFlagService = countryFlagService;
   }
 
   @Override
@@ -67,6 +85,14 @@ public class ChatUserFilterController extends AbstractFilterController<ListItem>
                     .map(Optional::get)
                     .map(player -> RatingUtil.getRating(player.getLeaderboardRatings().get("global")))
                     .stream().anyMatch(rating -> rating >= pair.getKey() && rating <= pair.getValue()))
+
+        .multiCheckbox(FilterName.COUNTRY_CODE, i18n.get("country"), countryFlagService.getCountries(), countryConverter,
+            (countries, item) -> item.isCategory() || countries.isEmpty() ||
+                item.getUser()
+                    .flatMap(ChatChannelUser::getPlayer)
+                    .map(PlayerBean::getCountry)
+                    .stream()
+                    .anyMatch(countryCode -> countries.stream().map(Country::code).toList().contains(countryCode)))
 
         .build();
   }
