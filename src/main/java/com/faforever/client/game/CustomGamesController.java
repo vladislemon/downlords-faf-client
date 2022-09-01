@@ -160,7 +160,8 @@ public class CustomGamesController extends AbstractViewController<Node> {
     );
     gameFilterController.setSecondaryFilters(
         FilterName.PLAYER_NAME,
-        FilterName.FEATURE_MOD
+        FilterName.FEATURE_MOD,
+        FilterName.MAP_FOLDER_NAME_BLACKLIST
     );
     gameFilterController.completeSetting();
     gameFilterPopup = PopupUtil.createPopup(AnchorLocation.CONTENT_TOP_LEFT, gameFilterController.getRoot());

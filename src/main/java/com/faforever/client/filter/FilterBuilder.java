@@ -67,6 +67,16 @@ public class FilterBuilder<T> {
     return this;
   }
 
+  public FilterBuilder<T> mutableList(FilterName filterName, String text, String promptText, BiFunction<List<String>, T, Boolean> filter) {
+    MutableListFilterController<T> controller = uiService.loadFxml("theme/filter/mutable_list_filter.fxml");
+    controller.setFilterName(filterName);
+    controller.setText(text);
+    controller.setPromptText(promptText);
+    controller.registerListener(filter);
+    controllers.add(controller);
+    return this;
+  }
+
   public void build() {
     onFilterBuilt.accept(controllers);
   }

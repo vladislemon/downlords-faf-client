@@ -13,6 +13,7 @@ import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
+import javax.swing.text.html.HTMLDocument.HTMLReader.BlockAction;
 import java.util.Collection;
 import java.util.List;
 
@@ -79,6 +80,9 @@ public class GameFilterController extends AbstractFilterController<GameBean> {
         .multiCheckbox(FilterName.FEATURE_MOD, i18n.get("featuredMod.displayName"), modService.getFeaturedMods(),
             featuredModConverter, (selectedMods, game) -> selectedMods.isEmpty() || selectedMods.stream()
                 .anyMatch(mod -> mod.getTechnicalName().equals(game.getFeaturedMod())))
+
+        .mutableList(FilterName.MAP_FOLDER_NAME_BLACKLIST, i18n.get("blacklist.mapFolderName"), i18n.get("blacklist.mapFolderName.promptText"),
+            (folderNames, game) -> folderNames.isEmpty() || folderNames.stream().noneMatch(name -> game.getMapFolderName().contains(name)))
 
         .build();
   }

@@ -6,6 +6,8 @@ public enum FilterName {
   PRIVATE_GAME,
   WITH_MODS,
 
+  MAP_FOLDER_NAME_BLACKLIST,
+
   PLAYER_NAME,
 
   GAME_STATUS,
