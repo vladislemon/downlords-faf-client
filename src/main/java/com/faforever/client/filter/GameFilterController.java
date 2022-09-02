@@ -4,6 +4,7 @@ import com.faforever.client.domain.FeaturedModBean;
 import com.faforever.client.domain.GameBean;
 import com.faforever.client.i18n.I18n;
 import com.faforever.client.mod.ModService;
+import com.faforever.client.player.PlayerService;
 import com.faforever.client.theme.UiService;
 import com.faforever.commons.lobby.GameType;
 import javafx.util.StringConverter;
@@ -16,6 +17,8 @@ import org.springframework.stereotype.Component;
 import java.util.Collection;
 import java.util.List;
 
+import static com.faforever.client.filter.FilterName.*;
+
 
 @Component
 @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
@@ -23,6 +26,7 @@ import java.util.List;
 public class GameFilterController extends AbstractFilterController<GameBean> {
 
   private final ModService modService;
+  private final PlayerService playerService;
 
   private final StringConverter<FeaturedModBean> featuredModConverter = new StringConverter<>() {
     @Override
@@ -53,38 +57,41 @@ public class GameFilterController extends AbstractFilterController<GameBean> {
     }
   };
 
-  public GameFilterController(UiService uiService, I18n i18n, ModService modService) {
+  public GameFilterController(UiService uiService, I18n i18n, ModService modService, PlayerService playerService) {
     super(uiService, i18n);
     this.modService = modService;
+    this.playerService = playerService;
   }
 
   @Override
   protected void build(FilterBuilder<GameBean> filterBuilder) {
     filterBuilder
 
-        .multiCheckbox(FilterName.GAME_TYPE, i18n.get("gameType"), List.of(GameType.CUSTOM, GameType.MATCHMAKER, GameType.COOP), gameTypeConverter,
+        .multiCheckbox(GAME_TYPE, i18n.get("gameType"), List.of(GameType.CUSTOM, GameType.MATCHMAKER, GameType.COOP), gameTypeConverter,
             (selectedGameTypes, game) -> selectedGameTypes.isEmpty() || selectedGameTypes.contains(game.getGameType()))
 
-        .checkbox(FilterName.SIM_MODS, i18n.get("hideSimMods"), (selected, game) -> !selected || game.getSimMods()
+        .checkbox(SIM_MODS, i18n.get("hideSimMods"), (selected, game) -> !selected || game.getSimMods()
             .isEmpty())
 
-        .checkbox(FilterName.PRIVATE_GAME, i18n.get("privateGame"), (selected, game) -> selected || !game.isPasswordProtected())
+        .checkbox(PRIVATE_GAME, i18n.get("privateGame"), (selected, game) -> selected || !game.isPasswordProtected())
 
-        .textField(FilterName.PLAYER_NAME, i18n.get("game.player.username"), (text, game) -> text.isEmpty() || game.getTeams()
+        .textField(PLAYER_NAME, i18n.get("game.player.username"), (text, game) -> text.isEmpty() || game.getTeams()
             .values()
             .stream()
             .flatMap(Collection::stream)
             .anyMatch(name -> StringUtils.containsIgnoreCase(name, text)))
 
-        .multiCheckbox(FilterName.FEATURE_MOD, i18n.get("featuredMod.displayName"), modService.getFeaturedMods(),
+        .multiCheckbox(FEATURE_MOD, i18n.get("featuredMod.displayName"), modService.getFeaturedMods(),
             featuredModConverter, (selectedMods, game) -> selectedMods.isEmpty() || selectedMods.stream()
                 .anyMatch(mod -> mod.getTechnicalName().equals(game.getFeaturedMod())))
 
-        .mutableList(FilterName.MAP_FOLDER_NAME_BLACKLIST, i18n.get("blacklist.mapFolderName"), i18n.get("blacklist.mapFolderName.promptText"),
+        .mutableList(MAP_FOLDER_NAME_BLACKLIST, i18n.get("blacklist.mapFolderName"), i18n.get("blacklist.mapFolderName.promptText"),
             (folderNames, game) -> folderNames.isEmpty() || folderNames.stream()
                 .noneMatch(name -> game.getMapFolderName().contains(name)))
 
-        .checkbox(FilterName.ONE_PLAYER, i18n.get("hideSingleGames"), (selected, game) -> !selected || game.getNumPlayers() != 1)
+        .checkbox(ONE_PLAYER, i18n.get("hideSingleGames"), (selected, game) -> !selected || game.getNumPlayers() != 1)
+
+        .checkbox(GAME_WITH_FRIENDS, i18n.get("showGamesWithFriends"), (selected, game) -> !selected || playerService.areFriendsInGame(game))
 
         .build();
   }

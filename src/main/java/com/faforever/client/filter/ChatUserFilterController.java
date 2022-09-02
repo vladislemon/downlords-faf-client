@@ -19,6 +19,8 @@ import org.springframework.stereotype.Component;
 import java.util.Arrays;
 import java.util.Optional;
 
+import static com.faforever.client.filter.FilterName.*;
+
 @Component
 @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 public class ChatUserFilterController extends AbstractFilterController<ListItem> {
@@ -61,7 +63,7 @@ public class ChatUserFilterController extends AbstractFilterController<ListItem>
   protected void build(FilterBuilder<ListItem> filterBuilder) {
     filterBuilder
 
-        .textField(FilterName.CLAN, i18n.get("chat.filter.clan"),
+        .textField(CLAN, i18n.get("chat.filter.clan"),
             (text, item) -> item.isCategory() || text.isEmpty() || item.getUser()
                 .filter(user -> user.getClanTag().isPresent())
                 .map(ChatChannelUser::getClanTag)
@@ -69,7 +71,7 @@ public class ChatUserFilterController extends AbstractFilterController<ListItem>
                 .stream()
                 .anyMatch(clan -> StringUtils.containsIgnoreCase(clan, text)))
 
-        .multiCheckbox(FilterName.GAME_STATUS, i18n.get("game.gameStatus"), Arrays.stream(PlayerStatus.values())
+        .multiCheckbox(GAME_STATUS, i18n.get("game.gameStatus"), Arrays.stream(PlayerStatus.values())
                 .toList(),
             playerStatusConverter, (selectedStatus, item) -> item.isCategory() || selectedStatus.isEmpty() ||
                 item.getUser()
@@ -79,7 +81,7 @@ public class ChatUserFilterController extends AbstractFilterController<ListItem>
                     .stream()
                     .anyMatch(selectedStatus::contains))
 
-        .rangeSlider(FilterName.PLAYER_RATING, i18n.get("game.globalRating"), MIN_RATING, MAX_RATING,
+        .rangeSlider(PLAYER_RATING, i18n.get("game.globalRating"), MIN_RATING, MAX_RATING,
             (pair, item) ->
                 item.isCategory() || item.getUser().map(ChatChannelUser::getPlayer)
                     .filter(Optional::isPresent)
@@ -87,7 +89,7 @@ public class ChatUserFilterController extends AbstractFilterController<ListItem>
                     .map(player -> RatingUtil.getRating(player.getLeaderboardRatings().get("global")))
                     .stream().anyMatch(rating -> Range.between(pair.getLeft(), pair.getRight()).contains(rating)))
 
-        .multiCheckbox(FilterName.COUNTRY_CODE, i18n.get("country"), countryFlagService.getCountries(), countryConverter,
+        .multiCheckbox(COUNTRY_CODE, i18n.get("country"), countryFlagService.getCountries(), countryConverter,
             (countries, item) -> item.isCategory() || countries.isEmpty() ||
                 item.getUser()
                     .flatMap(ChatChannelUser::getPlayer)

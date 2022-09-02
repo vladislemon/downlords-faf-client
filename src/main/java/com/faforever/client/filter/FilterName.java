@@ -15,5 +15,6 @@ public enum FilterName {
   MAP_WIDTH,
   FEATURE_MOD,
   NUMBER_OF_PLAYERS,
-  ONE_PLAYER
+  ONE_PLAYER,
+  GAME_WITH_FRIENDS,
 }

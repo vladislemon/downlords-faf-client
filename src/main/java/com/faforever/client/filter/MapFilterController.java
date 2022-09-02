@@ -8,6 +8,8 @@ import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
+import static com.faforever.client.filter.FilterName.*;
+
 @Component
 @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 public class MapFilterController extends AbstractFilterController<MapVersionBean> {
@@ -20,15 +22,15 @@ public class MapFilterController extends AbstractFilterController<MapVersionBean
   protected void build(FilterBuilder<MapVersionBean> filterBuilder) {
     filterBuilder
 
-        .rangeSlider(FilterName.MAP_WIDTH, i18n.get("game.filter.mapWidth"), 5, 100,
+        .rangeSlider(MAP_WIDTH, i18n.get("game.filter.mapWidth"), 5, 100,
             (pair, mapVersion) -> Range.between(pair.getLeft(), pair.getRight())
                 .contains(mapVersion.getSize().getWidthInKm()))
 
-        .rangeSlider(FilterName.MAP_HEIGHT, i18n.get("game.filter.mapHeight"), 5, 100,
+        .rangeSlider(MAP_HEIGHT, i18n.get("game.filter.mapHeight"), 5, 100,
             (pair, mapVersion) -> Range.between(pair.getLeft(), pair.getRight())
                 .contains(mapVersion.getSize().getHeightInKm()))
 
-        .rangeSlider(FilterName.NUMBER_OF_PLAYERS, i18n.get("game.filter.numberOfPlayers"), 1, 16,
+        .rangeSlider(NUMBER_OF_PLAYERS, i18n.get("game.filter.numberOfPlayers"), 1, 16,
             (pair, mapVersion) -> Range.between(pair.getLeft(), pair.getRight())
                 .contains(mapVersion.getMaxPlayers()))
 

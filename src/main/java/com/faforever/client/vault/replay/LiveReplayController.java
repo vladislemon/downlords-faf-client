@@ -90,6 +90,7 @@ public class LiveReplayController extends AbstractViewController<Node> {
     gameFilterController.setDefaultPredicate(game -> game.getStatus() == GameStatus.PLAYING);
     gameFilterController.setFilters(
         SIM_MODS,
+        GAME_WITH_FRIENDS,
         ONE_PLAYER,
         GAME_TYPE,
         FEATURE_MOD,
