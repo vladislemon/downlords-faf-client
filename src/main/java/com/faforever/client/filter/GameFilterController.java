@@ -13,7 +13,6 @@ import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
-import javax.swing.text.html.HTMLDocument.HTMLReader.BlockAction;
 import java.util.Collection;
 import java.util.List;
 
@@ -66,7 +65,7 @@ public class GameFilterController extends AbstractFilterController<GameBean> {
         .multiCheckbox(FilterName.GAME_TYPE, i18n.get("gameType"), List.of(GameType.CUSTOM, GameType.MATCHMAKER, GameType.COOP), gameTypeConverter,
             (selectedGameTypes, game) -> selectedGameTypes.isEmpty() || selectedGameTypes.contains(game.getGameType()))
 
-        .checkbox(FilterName.WITH_MODS, i18n.get("withMods"), (selected, game) -> selected || game.getSimMods()
+        .checkbox(FilterName.SIM_MODS, i18n.get("hideSimMods"), (selected, game) -> !selected || game.getSimMods()
             .isEmpty())
 
         .checkbox(FilterName.PRIVATE_GAME, i18n.get("privateGame"), (selected, game) -> selected || !game.isPasswordProtected())
@@ -82,7 +81,10 @@ public class GameFilterController extends AbstractFilterController<GameBean> {
                 .anyMatch(mod -> mod.getTechnicalName().equals(game.getFeaturedMod())))
 
         .mutableList(FilterName.MAP_FOLDER_NAME_BLACKLIST, i18n.get("blacklist.mapFolderName"), i18n.get("blacklist.mapFolderName.promptText"),
-            (folderNames, game) -> folderNames.isEmpty() || folderNames.stream().noneMatch(name -> game.getMapFolderName().contains(name)))
+            (folderNames, game) -> folderNames.isEmpty() || folderNames.stream()
+                .noneMatch(name -> game.getMapFolderName().contains(name)))
+
+        .checkbox(FilterName.ONE_PLAYER, i18n.get("hideSingleGames"), (selected, game) -> !selected || game.getNumPlayers() != 1)
 
         .build();
   }

@@ -50,6 +50,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
+import static com.faforever.client.filter.FilterName.*;
+
 @Component
 @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 @RequiredArgsConstructor
@@ -86,13 +88,12 @@ public class LiveReplayController extends AbstractViewController<Node> {
   private void initializeFilterController() {
     gameFilterController = uiService.loadFxml("theme/filter/filter.fxml", GameFilterController.class);;
     gameFilterController.setDefaultPredicate(game -> game.getStatus() == GameStatus.PLAYING);
-    gameFilterController.setPrimaryFilters(
-        FilterName.GAME_TYPE,
-        FilterName.WITH_MODS
-    );
-    gameFilterController.setSecondaryFilters(
-        FilterName.PLAYER_NAME,
-        FilterName.FEATURE_MOD
+    gameFilterController.setFilters(
+        SIM_MODS,
+        ONE_PLAYER,
+        GAME_TYPE,
+        FEATURE_MOD,
+        PLAYER_NAME
     );
     gameFilterController.completeSetting();
 

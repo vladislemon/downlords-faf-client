@@ -13,38 +13,22 @@
     <items>
         <AnchorPane SplitPane.resizableWithParent="false">
             <children>
-                <VBox spacing="4.0">
-                    <children>
-                        <Button fx:id="resetAllButton" disable="true" mnemonicParsing="false"
-                                onAction="#onResetAllButtonClicked">
-                            <graphic>
-                                <Region styleClass="icon, icon16x16, spinner-icon"/>
-                            </graphic>
-                            <tooltip>
-                                <Tooltip text="%resetAll"/>
-                            </tooltip>
-                        </Button>
-                        <Button fx:id="filterModeButton" mnemonicParsing="false" onAction="#onFilterModeButtonClicked">
-                            <graphic>
-                                <Region fx:id="filterModeIcon" styleClass="icon, icon16x16, circle-down-icon" />
-                            </graphic>
-                        </Button>
-                    </children>
-                </VBox>
+                <Button fx:id="resetAllButton" disable="true" mnemonicParsing="false"
+                        onAction="#onResetAllButtonClicked">
+                    <graphic>
+                        <Region styleClass="icon, icon16x16, clear-icon"/>
+                    </graphic>
+                    <tooltip>
+                        <Tooltip text="%resetAll"/>
+                    </tooltip>
+                </Button>
             </children>
             <padding>
                 <Insets right="4.0"/>
             </padding>
         </AnchorPane>
         <AnchorPane SplitPane.resizableWithParent="false">
-            <VBox spacing="4.0">
-                <children>
-                    <VBox fx:id="primaryFiltersContent" spacing="4.0">
-                    </VBox>
-                    <VBox fx:id="secondaryFiltersContent" spacing="4.0" visible="false">
-                    </VBox>
-                </children>
-            </VBox>
+            <VBox fx:id="filtersContent" spacing="4.0"/>
         </AnchorPane>
     </items>
 </SplitPane>

@@ -12,11 +12,9 @@ import javafx.beans.property.Property;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 import javafx.collections.ObservableMap;
 import javafx.scene.control.Button;
 import javafx.scene.control.SplitPane;
-import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import org.apache.commons.lang3.mutable.MutableObject;
 
@@ -25,7 +23,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.function.BiFunction;
 import java.util.function.Predicate;
-import java.util.stream.Stream;
 
 public abstract class AbstractFilterController<T> implements Controller<SplitPane> {
 
@@ -34,17 +31,13 @@ public abstract class AbstractFilterController<T> implements Controller<SplitPan
    * Takes from {@code theme/filter/filter.fxml} file
    */
   public SplitPane root;
-  public VBox primaryFiltersContent;
-  public VBox secondaryFiltersContent;
-  public Button filterModeButton;
+  public VBox filtersContent;
   public Button resetAllButton;
-  public Region filterModeIcon;
 
   protected final UiService uiService;
   protected final I18n i18n;
 
-  private final List<FilterName> primaryFilterNames = new ArrayList<>();
-  private final List<FilterName> secondaryFilterNames = new ArrayList<>();
+  private final List<FilterName> filterNames = new ArrayList<>();
   private List<? extends AbstractFilterNodeController<?, T>> usedFilters;
   private ObservableMap<FilterName, Predicate<T>> customFilters = FXCollections.observableHashMap();
   private Predicate<T> defaultPredicate = t -> true;
@@ -62,10 +55,7 @@ public abstract class AbstractFilterController<T> implements Controller<SplitPan
 
   @Override
   public void initialize() {
-    JavaFxUtil.bindManagedToVisible(filterModeButton, secondaryFiltersContent);
-    JavaFxUtil.addAndTriggerListener(secondaryFiltersContent.getChildren(),
-        (InvalidationListener) observable -> filterModeButton.setVisible(!secondaryFiltersContent.getChildren()
-            .isEmpty()));
+
   }
 
   protected abstract void build(FilterBuilder<T> filterBuilder);
@@ -87,22 +77,16 @@ public abstract class AbstractFilterController<T> implements Controller<SplitPan
     predicateProperty.setValue(defaultPredicate);
   }
 
-  public final void setPrimaryFilters(FilterName... filterNames) {
-    primaryFilterNames.addAll(Arrays.stream(filterNames).toList());
-  }
-
-  public final void setSecondaryFilters(FilterName... filterNames) {
-    secondaryFilterNames.addAll(Arrays.stream(filterNames).toList());
+  public final void setFilters(FilterName... filterNames) {
+    this.filterNames.addAll(Arrays.stream(filterNames).toList());
   }
 
   private void onFilterBuilt(List<AbstractFilterNodeController<?, T>> controllers) {
-    List<? extends AbstractFilterNodeController<?, T>> primaryFilters = getUsedControllers(primaryFilterNames, controllers);
-    List<? extends AbstractFilterNodeController<?, T>> secondaryFilters = getUsedControllers(secondaryFilterNames, controllers);
+    List<? extends AbstractFilterNodeController<?, T>> filterControllers = getUsedControllers(filterNames, controllers);
 
-    setFilterContent(primaryFiltersContent, primaryFilters);
-    setFilterContent(secondaryFiltersContent, secondaryFilters);
+    setFilterContent(filtersContent, filterControllers);
 
-    usedFilters = Stream.concat(primaryFilters.stream(), secondaryFilters.stream()).toList();
+    usedFilters = filterControllers;
     usedFilters.forEach(filter -> JavaFxUtil.addListener(filter.getPredicateProperty(), observable -> invalidated()));
     customFilters.addListener((InvalidationListener) observable -> invalidated());
     invalidated();
@@ -146,14 +130,6 @@ public abstract class AbstractFilterController<T> implements Controller<SplitPan
   public void onResetAllButtonClicked() {
     usedFilters.forEach(AbstractFilterNodeController::resetFilter);
     resetAllButton.setDisable(true);
-  }
-
-  public void onFilterModeButtonClicked() {
-    secondaryFiltersContent.setVisible(!secondaryFiltersContent.isVisible());
-    boolean visible = secondaryFiltersContent.isVisible();
-    ObservableList<String> styleClass = filterModeIcon.getStyleClass();
-    styleClass.remove(visible ? "circle-down-icon" : "circle-up-icon");
-    styleClass.add(visible ? "circle-up-icon" : "circle-down-icon");
   }
 
   @Override

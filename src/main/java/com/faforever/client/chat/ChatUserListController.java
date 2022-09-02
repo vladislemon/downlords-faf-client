@@ -71,6 +71,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.stream.Collectors;
 
+import static com.faforever.client.filter.FilterName.*;
 import static java.util.Locale.US;
 
 @Slf4j
@@ -190,7 +191,9 @@ public class ChatUserListController implements Controller<VBox>, InitializingBea
     this.channelTab = channelTab;
     this.channelName = chatChannel.getName();
     this.chatTabSelectedProperty = chatTabSelectedProperty;
-    this.channelNameToHiddenCategories = preferencesService.getPreferences().getChat().getChannelNameToHiddenCategories();
+    this.channelNameToHiddenCategories = preferencesService.getPreferences()
+        .getChat()
+        .getChannelNameToHiddenCategories();
     this.hiddenCategories = channelNameToHiddenCategories.get(channelName);
 
     prepareData();
@@ -305,7 +308,8 @@ public class ChatUserListController implements Controller<VBox>, InitializingBea
   }
 
   private void onUserJoined(ChatChannelUser user) {
-    playerService.getPlayerByNameIfOnline(user.getUsername()).ifPresent(player -> chatUserService.associatePlayerToChatUser(user, player));
+    playerService.getPlayerByNameIfOnline(user.getUsername())
+        .ifPresent(player -> chatUserService.associatePlayerToChatUser(user, player));
     List<ChatUserItem> chatUserItems = usernameToChatUserList.computeIfAbsent(user.getUsername(), name -> new ArrayList<>());
     if (chatUserItems.isEmpty()) {
       user.getChatUserCategories().forEach(category -> {
@@ -369,13 +373,13 @@ public class ChatUserListController implements Controller<VBox>, InitializingBea
 
   private void initializeFilter() {
     chatUserFilterController = uiService.loadFxml("theme/filter/filter.fxml", ChatUserFilterController.class);
-    chatUserFilterController.addCustomFilter(FilterName.PLAYER_NAME, searchUsernameTextField.textProperty(),(text, item) -> item.isCategory() || text.isEmpty()
+    chatUserFilterController.addCustomFilter(PLAYER_NAME, searchUsernameTextField.textProperty(), (text, item) -> item.isCategory() || text.isEmpty()
         || item.getUser().stream().anyMatch(user -> StringUtils.containsIgnoreCase(user.getUsername(), text)));
-    chatUserFilterController.setPrimaryFilters(
-        FilterName.GAME_STATUS,
-        FilterName.PLAYER_RATING,
-        FilterName.CLAN,
-        FilterName.COUNTRY_CODE
+    chatUserFilterController.setFilters(
+        GAME_STATUS,
+        PLAYER_RATING,
+        COUNTRY_CODE,
+        CLAN
     );
     chatUserFilterController.completeSetting();
 
@@ -397,7 +401,8 @@ public class ChatUserListController implements Controller<VBox>, InitializingBea
       filterPopup.hide();
     } else {
       Bounds screenBounds = advancedFiltersToggleButton.localToScreen(advancedFiltersToggleButton.getBoundsInLocal());
-      filterPopup.show(advancedFiltersToggleButton.getScene().getWindow(), screenBounds.getMinX() - 10, screenBounds.getMinY());
+      filterPopup.show(advancedFiltersToggleButton.getScene()
+          .getWindow(), screenBounds.getMinX() - 10, screenBounds.getMinY());
     }
   }
 
@@ -436,6 +441,7 @@ public class ChatUserListController implements Controller<VBox>, InitializingBea
 
   @VisibleForTesting
   void waitForUsersEvent() throws Exception {
-    usersEventQueueExecutor.submit(() -> {  }).get();
+    usersEventQueueExecutor.submit(() -> {
+    }).get();
   }
 }

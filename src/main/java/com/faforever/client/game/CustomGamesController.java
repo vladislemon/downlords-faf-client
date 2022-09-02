@@ -150,16 +150,9 @@ public class CustomGamesController extends AbstractViewController<Node> {
   private void initializeFilterController() {
     gameFilterController = uiService.loadFxml("theme/filter/filter.fxml", GameFilterController.class);
     gameFilterController.setDefaultPredicate(game -> game.getStatus() == GameStatus.OPEN && game.getGameType() == GameType.CUSTOM);
-    //gameFilterController.getFilterBuilder(filterBuilder -> {
-    //  JavaFxUtil.bindBidirectional(filterBuilder.getCheckbox(FilterName.PRIVATE_GAME).selectedProperty(), preferences.showPasswordProtectedGamesProperty());
-    //  JavaFxUtil.bindBidirectional(filterBuilder.getCheckbox(FilterName.WITH_MODS).selectedProperty(), preferences.showModdedGamesProperty());
-    //});
-    gameFilterController.setPrimaryFilters(
+    gameFilterController.setFilters(
         FilterName.PRIVATE_GAME,
-        FilterName.WITH_MODS
-    );
-    gameFilterController.setSecondaryFilters(
-        FilterName.PLAYER_NAME,
+        FilterName.SIM_MODS,
         FilterName.FEATURE_MOD,
         FilterName.MAP_FOLDER_NAME_BLACKLIST
     );

@@ -6,7 +6,6 @@ import com.faforever.client.domain.MapVersionBean;
 import com.faforever.client.domain.ModVersionBean;
 import com.faforever.client.exception.NotifiableException;
 import com.faforever.client.fa.FaStrings;
-import com.faforever.client.filter.FilterName;
 import com.faforever.client.filter.MapFilterController;
 import com.faforever.client.fx.Controller;
 import com.faforever.client.fx.DualStringListCell;
@@ -78,6 +77,10 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import static com.faforever.client.filter.FilterName.MAP_HEIGHT;
+import static com.faforever.client.filter.FilterName.MAP_NAME;
+import static com.faforever.client.filter.FilterName.MAP_WIDTH;
+import static com.faforever.client.filter.FilterName.NUMBER_OF_PLAYERS;
 import static javafx.scene.layout.BackgroundPosition.CENTER;
 import static javafx.scene.layout.BackgroundRepeat.NO_REPEAT;
 
@@ -235,8 +238,12 @@ public class CreateGameController implements Controller<Pane> {
 
   private void initMapFilterPopup() {
     mapFilterController = uiService.loadFxml("theme/filter/filter.fxml", MapFilterController.class);
-    mapFilterController.addCustomFilter(FilterName.MAP_NAME, mapSearchTextField.textProperty(), (name, mapVersion) -> name.isEmpty() || mapVersion.getMap().getDisplayName().contains(name));
-    mapFilterController.setPrimaryFilters(FilterName.NUMBER_OF_PLAYERS, FilterName.MAP_WIDTH, FilterName.MAP_HEIGHT);
+    mapFilterController.addCustomFilter(MAP_NAME, mapSearchTextField.textProperty(), (name, mapVersion) -> name.isEmpty() || mapVersion.getMap().getDisplayName().contains(name));
+    mapFilterController.setFilters(
+        NUMBER_OF_PLAYERS,
+        MAP_WIDTH,
+        MAP_HEIGHT
+    );
     mapFilterController.completeSetting();
 
     JavaFxUtil.addAndTriggerListener(mapFilterController.getFilterStateProperty(), (observable, oldValue, newValue) -> mapFilterButton.setSelected(newValue));

@@ -1,6 +1,5 @@
 package com.faforever.client.filter;
 
-import com.faforever.client.domain.MapBean;
 import com.faforever.client.domain.MapVersionBean;
 import com.faforever.client.i18n.I18n;
 import com.faforever.client.theme.UiService;
