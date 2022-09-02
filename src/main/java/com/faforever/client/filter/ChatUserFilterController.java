@@ -10,6 +10,7 @@ import com.faforever.client.player.CountryFlagService.Country;
 import com.faforever.client.theme.UiService;
 import com.faforever.client.util.RatingUtil;
 import javafx.util.StringConverter;
+import org.apache.commons.lang3.Range;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Scope;
@@ -24,8 +25,8 @@ public class ChatUserFilterController extends AbstractFilterController<ListItem>
 
   private final CountryFlagService countryFlagService;
 
-  private final int MIN_RATING = -1000;
-  private final int MAX_RATING = 3000;
+  private final static int MIN_RATING = -1000;
+  private final static int MAX_RATING = 3000;
 
   private final StringConverter<PlayerStatus> playerStatusConverter = new StringConverter<>() {
     @Override
@@ -84,7 +85,7 @@ public class ChatUserFilterController extends AbstractFilterController<ListItem>
                     .filter(Optional::isPresent)
                     .map(Optional::get)
                     .map(player -> RatingUtil.getRating(player.getLeaderboardRatings().get("global")))
-                    .stream().anyMatch(rating -> rating >= pair.getKey() && rating <= pair.getValue()))
+                    .stream().anyMatch(rating -> Range.between(pair.getLeft(), pair.getRight()).contains(rating)))
 
         .multiCheckbox(FilterName.COUNTRY_CODE, i18n.get("country"), countryFlagService.getCountries(), countryConverter,
             (countries, item) -> item.isCategory() || countries.isEmpty() ||

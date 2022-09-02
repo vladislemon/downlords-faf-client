@@ -8,8 +8,8 @@ import javafx.beans.binding.ObjectBinding;
 import javafx.scene.Node;
 import javafx.scene.control.MenuButton;
 import javafx.scene.control.TextField;
-import javafx.util.Pair;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.controlsfx.control.RangeSlider;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Scope;
@@ -18,7 +18,7 @@ import org.springframework.stereotype.Component;
 @Component
 @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 @RequiredArgsConstructor
-public class RangeSliderFilterController<T> extends AbstractFilterNodeController<Pair<Integer, Integer>, T> {
+public class RangeSliderFilterController<T> extends AbstractFilterNodeController<ImmutablePair<Integer, Integer>, T> {
 
   private final I18n i18n;
 
@@ -27,7 +27,7 @@ public class RangeSliderFilterController<T> extends AbstractFilterNodeController
   public TextField lowValueTextField;
   public TextField highValueTextField;
 
-  private ObjectBinding<Pair<Integer, Integer>> pairProperty;
+  private ObjectBinding<ImmutablePair<Integer, Integer>> pairProperty;
   private String defaultText;
 
   private double minValue;
@@ -88,14 +88,14 @@ public class RangeSliderFilterController<T> extends AbstractFilterNodeController
   @Override
   public Observable getObservable() {
     if (pairProperty == null) {
-      pairProperty = Bindings.createObjectBinding(() -> new Pair<>(((int) rangeSlider.getLowValue()), ((int) rangeSlider.getHighValue())),
+      pairProperty = Bindings.createObjectBinding(() -> ImmutablePair.of(((int) rangeSlider.getLowValue()), ((int) rangeSlider.getHighValue())),
           rangeSlider.lowValueProperty(), rangeSlider.highValueProperty());
     }
     return pairProperty;
   }
 
   @Override
-  public Pair<Integer, Integer> getValue() {
+  public ImmutablePair<Integer, Integer> getValue() {
     return pairProperty.getValue();
   }
 

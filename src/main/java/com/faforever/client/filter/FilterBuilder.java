@@ -5,6 +5,7 @@ import javafx.util.Pair;
 import javafx.util.StringConverter;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.tuple.ImmutablePair;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -56,7 +57,7 @@ public class FilterBuilder<T> {
     return this;
   }
 
-  public FilterBuilder<T> rangeSlider(FilterName filterName, String text, double minValue, double maxValue, BiFunction<Pair<Integer, Integer>, T, Boolean> filter) {
+  public FilterBuilder<T> rangeSlider(FilterName filterName, String text, double minValue, double maxValue, BiFunction<ImmutablePair<Integer, Integer>, T, Boolean> filter) {
     RangeSliderFilterController<T> controller = uiService.loadFxml("theme/filter/range_slider_filter.fxml");
     controller.setFilterName(filterName);
     controller.setText(text);

@@ -22,15 +22,15 @@ public class MapFilterController extends AbstractFilterController<MapVersionBean
     filterBuilder
 
         .rangeSlider(FilterName.MAP_WIDTH, i18n.get("game.filter.mapWidth"), 5, 100,
-            (pair, mapVersion) -> Range.between(pair.getKey(), pair.getValue())
+            (pair, mapVersion) -> Range.between(pair.getLeft(), pair.getRight())
                 .contains(mapVersion.getSize().getWidthInKm()))
 
         .rangeSlider(FilterName.MAP_HEIGHT, i18n.get("game.filter.mapHeight"), 5, 100,
-            (pair, mapVersion) -> Range.between(pair.getKey(), pair.getValue())
+            (pair, mapVersion) -> Range.between(pair.getLeft(), pair.getRight())
                 .contains(mapVersion.getSize().getHeightInKm()))
 
         .rangeSlider(FilterName.NUMBER_OF_PLAYERS, i18n.get("game.filter.numberOfPlayers"), 1, 16,
-            (pair, mapVersion) -> Range.between(pair.getKey(), pair.getValue())
+            (pair, mapVersion) -> Range.between(pair.getLeft(), pair.getRight())
                 .contains(mapVersion.getMaxPlayers()))
 
         .build();
