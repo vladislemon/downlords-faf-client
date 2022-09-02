@@ -6,6 +6,8 @@ import com.faforever.client.domain.MapVersionBean;
 import com.faforever.client.domain.ModVersionBean;
 import com.faforever.client.exception.NotifiableException;
 import com.faforever.client.fa.FaStrings;
+import com.faforever.client.filter.FilterName;
+import com.faforever.client.filter.MapFilterController;
 import com.faforever.client.fx.Controller;
 import com.faforever.client.fx.DualStringListCell;
 import com.faforever.client.fx.JavaFxUtil;
@@ -232,11 +234,14 @@ public class CreateGameController implements Controller<Pane> {
   }
 
   private void initMapFilterPopup() {
-    mapFilterController = uiService.loadFxml("theme/play/map_filter.fxml");
-    mapFilterController.setMapNameTextField(mapSearchTextField);
-    mapFilterController.getFilterAppliedProperty()
-        .addListener(((observable, old, newValue) -> mapFilterButton.setSelected(newValue)));
-    mapFilterController.setFilteredMapList(filteredMaps);
+    mapFilterController = uiService.loadFxml("theme/filter/filter.fxml", MapFilterController.class);
+    mapFilterController.addCustomFilter(FilterName.MAP_NAME, mapSearchTextField.textProperty(), (name, mapVersion) -> name.isEmpty() || mapVersion.getMap().getDisplayName().contains(name));
+    mapFilterController.setPrimaryFilters(FilterName.NUMBER_OF_PLAYERS, FilterName.MAP_WIDTH, FilterName.MAP_HEIGHT);
+    mapFilterController.completeSetting();
+
+    JavaFxUtil.addAndTriggerListener(mapFilterController.getFilterStateProperty(), (observable, oldValue, newValue) -> mapFilterButton.setSelected(newValue));
+    JavaFxUtil.addAndTriggerListener(mapFilterButton.selectedProperty(), observable -> mapFilterButton.setSelected(mapFilterController.getFilterState()));
+    JavaFxUtil.addAndTriggerListener(mapFilterController.getPredicateProperty(), (observable, oldValue, newValue) -> filteredMaps.setPredicate(newValue));
     mapFilterPopup = PopupUtil.createPopup(AnchorLocation.CONTENT_BOTTOM_LEFT, mapFilterController.getRoot());
   }
 
@@ -527,7 +532,6 @@ public class CreateGameController implements Controller<Pane> {
   }
 
   public void onMapFilterButtonClicked() {
-    mapFilterButton.setSelected(mapFilterController.getFilterAppliedProperty().getValue());
     if (mapFilterPopup.isShowing()) {
       mapFilterPopup.hide();
     } else {
