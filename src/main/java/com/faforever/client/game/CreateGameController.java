@@ -249,7 +249,7 @@ public class CreateGameController implements Controller<Pane> {
     JavaFxUtil.addAndTriggerListener(mapFilterController.getFilterStateProperty(), (observable, oldValue, newValue) -> mapFilterButton.setSelected(newValue));
     JavaFxUtil.addAndTriggerListener(mapFilterButton.selectedProperty(), observable -> mapFilterButton.setSelected(mapFilterController.getFilterState()));
     JavaFxUtil.addAndTriggerListener(mapFilterController.getPredicateProperty(), (observable, oldValue, newValue) -> filteredMaps.setPredicate(newValue));
-    mapFilterPopup = PopupUtil.createPopup(AnchorLocation.CONTENT_BOTTOM_LEFT, mapFilterController.getRoot());
+    mapFilterPopup = PopupUtil.createPopup(AnchorLocation.CONTENT_TOP_RIGHT, mapFilterController.getRoot());
   }
 
   private void validateTitle(String gameTitle) {
@@ -542,8 +542,8 @@ public class CreateGameController implements Controller<Pane> {
     if (mapFilterPopup.isShowing()) {
       mapFilterPopup.hide();
     } else {
-      Bounds screenBounds = mapSearchTextField.localToScreen(mapSearchTextField.getBoundsInLocal());
-      mapFilterPopup.show(mapSearchTextField.getScene().getWindow(), screenBounds.getMinX(), screenBounds.getMinY());
+      Bounds screenBounds = mapFilterButton.localToScreen(mapFilterButton.getBoundsInLocal());
+      mapFilterPopup.show(mapFilterButton.getScene().getWindow(), screenBounds.getMinX() - 10, screenBounds.getMinY());
     }
   }
 
