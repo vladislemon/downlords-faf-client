@@ -150,7 +150,7 @@ public class CustomGamesController extends AbstractViewController<Node> {
   private void initializeFilterController() {
     gameFilterController = uiService.loadFxml("theme/filter/filter.fxml", GameFilterController.class);
     gameFilterController.setDefaultPredicate(game -> game.getStatus() == GameStatus.OPEN && game.getGameType() == GameType.CUSTOM);
-    gameFilterController.setFilters(
+    gameFilterController.setFollowingFilters(
         FilterName.PRIVATE_GAME,
         FilterName.SIM_MODS,
         FilterName.FEATURE_MOD,

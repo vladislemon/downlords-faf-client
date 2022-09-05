@@ -37,9 +37,9 @@ public abstract class AbstractFilterController<T> implements Controller<SplitPan
   protected final UiService uiService;
   protected final I18n i18n;
 
-  private final List<FilterName> filterNames = new ArrayList<>();
-  private List<? extends AbstractFilterNodeController<?, T>> usedFilters;
-  private ObservableMap<FilterName, Predicate<T>> customFilters = FXCollections.observableHashMap();
+  private final List<FilterName> activeFilterNames = new ArrayList<>();
+  private final ObservableMap<FilterName, Predicate<T>> externalFilters = FXCollections.observableHashMap();
+  private List<? extends AbstractFilterNodeController<?, T>> activeFilters;
   private Predicate<T> defaultPredicate = t -> true;
 
   private final BooleanProperty filterStateProperty = new SimpleBooleanProperty(false);
@@ -77,22 +77,19 @@ public abstract class AbstractFilterController<T> implements Controller<SplitPan
     predicateProperty.setValue(defaultPredicate);
   }
 
-  public final void setFilters(FilterName... filterNames) {
-    this.filterNames.addAll(Arrays.stream(filterNames).toList());
+  public final void setFollowingFilters(FilterName... filterNames) {
+    this.activeFilterNames.addAll(Arrays.stream(filterNames).toList());
   }
 
   private void onFilterBuilt(List<AbstractFilterNodeController<?, T>> controllers) {
-    List<? extends AbstractFilterNodeController<?, T>> filterControllers = getUsedControllers(filterNames, controllers);
-
-    setFilterContent(filtersContent, filterControllers);
-
-    usedFilters = filterControllers;
-    usedFilters.forEach(filter -> JavaFxUtil.addListener(filter.getPredicateProperty(), observable -> invalidated()));
-    customFilters.addListener((InvalidationListener) observable -> invalidated());
+    activeFilters = getActiveControllers(activeFilterNames, controllers);
+    setFilterContent(filtersContent, activeFilters);
+    activeFilters.forEach(filter -> JavaFxUtil.addListener(filter.getPredicateProperty(), observable -> invalidated()));
+    externalFilters.addListener((InvalidationListener) observable -> invalidated());
     invalidated();
   }
 
-  private List<? extends AbstractFilterNodeController<?, T>> getUsedControllers(List<FilterName> filterNames, List<AbstractFilterNodeController<?, T>> controllers) {
+  private List<? extends AbstractFilterNodeController<?, T>> getActiveControllers(List<FilterName> filterNames, List<AbstractFilterNodeController<?, T>> controllers) {
     return filterNames.stream()
         .map(filterName -> controllers.stream()
             .filter(controller -> controller.getFilterName() == filterName)
@@ -111,24 +108,24 @@ public abstract class AbstractFilterController<T> implements Controller<SplitPan
 
   private synchronized void invalidated() {
     MutableObject<Predicate<T>> object = new MutableObject<>(defaultPredicate);
-    usedFilters.forEach(filter -> object.setValue(object.getValue().and(filter.getPredicate())));
-    customFilters.values().forEach(filter -> object.setValue(object.getValue().and(filter)));
+    activeFilters.forEach(filter -> object.setValue(object.getValue().and(filter.getPredicate())));
+    externalFilters.values().forEach(filter -> object.setValue(object.getValue().and(filter)));
     predicateProperty.setValue(object.getValue());
     updateFilterState();
   }
 
   private void updateFilterState() {
-    boolean hasDefaultValues = usedFilters.stream().allMatch(AbstractFilterNodeController::hasDefaultValue);
+    boolean hasDefaultValues = activeFilters.stream().allMatch(AbstractFilterNodeController::hasDefaultValue);
     filterStateProperty.setValue(!hasDefaultValues);
     resetAllButton.setDisable(hasDefaultValues);
   }
 
-  public <U> void addCustomFilter(FilterName filterName, Property<U> property, BiFunction<U, T, Boolean> filter) {
-    JavaFxUtil.addListener(property, observable -> customFilters.put(filterName, item -> filter.apply(property.getValue(), item)));
+  public <U> void bindExternalFilter(FilterName filterName, Property<U> property, BiFunction<U, T, Boolean> filter) {
+    JavaFxUtil.addListener(property, observable -> externalFilters.put(filterName, item -> filter.apply(property.getValue(), item)));
   }
 
   public void onResetAllButtonClicked() {
-    usedFilters.forEach(AbstractFilterNodeController::resetFilter);
+    activeFilters.forEach(AbstractFilterNodeController::resetFilter);
     resetAllButton.setDisable(true);
   }
 

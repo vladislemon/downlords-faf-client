@@ -1,7 +1,6 @@
 package com.faforever.client.vault.replay;
 
 import com.faforever.client.domain.GameBean;
-import com.faforever.client.filter.FilterName;
 import com.faforever.client.filter.GameFilterController;
 import com.faforever.client.fx.AbstractViewController;
 import com.faforever.client.fx.DecimalCell;
@@ -88,7 +87,7 @@ public class LiveReplayController extends AbstractViewController<Node> {
   private void initializeFilterController() {
     gameFilterController = uiService.loadFxml("theme/filter/filter.fxml", GameFilterController.class);;
     gameFilterController.setDefaultPredicate(game -> game.getStatus() == GameStatus.PLAYING);
-    gameFilterController.setFilters(
+    gameFilterController.setFollowingFilters(
         SIM_MODS,
         GAME_WITH_FRIENDS,
         ONE_PLAYER,

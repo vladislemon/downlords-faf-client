@@ -238,8 +238,8 @@ public class CreateGameController implements Controller<Pane> {
 
   private void initMapFilterPopup() {
     mapFilterController = uiService.loadFxml("theme/filter/filter.fxml", MapFilterController.class);
-    mapFilterController.addCustomFilter(MAP_NAME, mapSearchTextField.textProperty(), (name, mapVersion) -> name.isEmpty() || mapVersion.getMap().getDisplayName().contains(name));
-    mapFilterController.setFilters(
+    mapFilterController.bindExternalFilter(MAP_NAME, mapSearchTextField.textProperty(), (name, mapVersion) -> name.isEmpty() || mapVersion.getMap().getDisplayName().contains(name));
+    mapFilterController.setFollowingFilters(
         NUMBER_OF_PLAYERS,
         MAP_WIDTH,
         MAP_HEIGHT

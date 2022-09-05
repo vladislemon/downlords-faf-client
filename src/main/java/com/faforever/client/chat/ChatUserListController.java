@@ -2,7 +2,6 @@ package com.faforever.client.chat;
 
 import com.faforever.client.chat.event.ChatUserCategoryChangeEvent;
 import com.faforever.client.filter.ChatUserFilterController;
-import com.faforever.client.filter.FilterName;
 import com.faforever.client.fx.Controller;
 import com.faforever.client.fx.JavaFxUtil;
 import com.faforever.client.i18n.I18n;
@@ -373,9 +372,9 @@ public class ChatUserListController implements Controller<VBox>, InitializingBea
 
   private void initializeFilter() {
     chatUserFilterController = uiService.loadFxml("theme/filter/filter.fxml", ChatUserFilterController.class);
-    chatUserFilterController.addCustomFilter(PLAYER_NAME, searchUsernameTextField.textProperty(), (text, item) -> item.isCategory() || text.isEmpty()
+    chatUserFilterController.bindExternalFilter(PLAYER_NAME, searchUsernameTextField.textProperty(), (text, item) -> item.isCategory() || text.isEmpty()
         || item.getUser().stream().anyMatch(user -> StringUtils.containsIgnoreCase(user.getUsername(), text)));
-    chatUserFilterController.setFilters(
+    chatUserFilterController.setFollowingFilters(
         GAME_STATUS,
         PLAYER_RATING,
         COUNTRY_CODE,
