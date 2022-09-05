@@ -82,12 +82,14 @@ public class ChatUserFilterController extends AbstractFilterController<ListItem>
                     .anyMatch(selectedStatus::contains))
 
         .rangeSlider(PLAYER_RATING, i18n.get("game.globalRating"), MIN_RATING, MAX_RATING,
-            (pair, item) ->
-                item.isCategory() || item.getUser().map(ChatChannelUser::getPlayer)
+            (pair, item) -> item.isCategory() || pair == RangeSliderFilterController.NO_CHANGE ||
+                item.getUser()
+                    .map(ChatChannelUser::getPlayer)
                     .filter(Optional::isPresent)
                     .map(Optional::get)
                     .map(player -> RatingUtil.getRating(player.getLeaderboardRatings().get("global")))
-                    .stream().anyMatch(rating -> Range.between(pair.getLeft(), pair.getRight()).contains(rating)))
+                    .stream()
+                    .anyMatch(rating -> Range.between(pair.getLeft(), pair.getRight()).contains(rating)))
 
         .multiCheckbox(COUNTRY_CODE, i18n.get("country"), countryFlagService.getCountries(), countryConverter,
             (countries, item) -> item.isCategory() || countries.isEmpty() ||

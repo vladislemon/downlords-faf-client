@@ -20,6 +20,8 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class RangeSliderFilterController<T> extends AbstractFilterNodeController<ImmutablePair<Integer, Integer>, T> {
 
+  public static ImmutablePair<Integer, Integer> NO_CHANGE = ImmutablePair.nullPair();
+
   private final I18n i18n;
 
   public MenuButton root;
@@ -88,7 +90,11 @@ public class RangeSliderFilterController<T> extends AbstractFilterNodeController
   @Override
   public Observable getObservable() {
     if (pairProperty == null) {
-      pairProperty = Bindings.createObjectBinding(() -> ImmutablePair.of(((int) rangeSlider.getLowValue()), ((int) rangeSlider.getHighValue())),
+      pairProperty = Bindings.createObjectBinding(() -> {
+            int lowValue = (int) rangeSlider.getLowValue();
+            int highValue = (int) rangeSlider.getHighValue();
+            return lowValue == minValue && highValue == maxValue ? NO_CHANGE : ImmutablePair.of(lowValue, highValue);
+          },
           rangeSlider.lowValueProperty(), rangeSlider.highValueProperty());
     }
     return pairProperty;
