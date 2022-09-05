@@ -4,74 +4,17 @@ import com.faforever.client.fx.JavaFxUtil;
 import com.faforever.client.i18n.I18n;
 import javafx.beans.Observable;
 import javafx.beans.binding.Bindings;
-import javafx.beans.binding.ObjectBinding;
-import javafx.scene.Node;
-import javafx.scene.control.MenuButton;
-import javafx.scene.control.TextField;
-import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.controlsfx.control.RangeSlider;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 @Component
 @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
-@RequiredArgsConstructor
-public class RangeSliderFilterController<T> extends AbstractFilterNodeController<ImmutablePair<Integer, Integer>, T> {
+public class RangeSliderFilterController<T> extends AbstractRangeSliderFilterController<ImmutablePair<Integer, Integer>, T> {
 
-  public static ImmutablePair<Integer, Integer> NO_CHANGE = ImmutablePair.nullPair();
-
-  private final I18n i18n;
-
-  public MenuButton root;
-  public RangeSlider rangeSlider;
-  public TextField lowValueTextField;
-  public TextField highValueTextField;
-
-  private ObjectBinding<ImmutablePair<Integer, Integer>> pairProperty;
-  private String defaultText;
-
-  private double minValue;
-  private double maxValue;
-
-  @Override
-  public void initialize() {
-    rangeSlider.setShowTickLabels(true);
-    rangeSlider.setShowTickMarks(true);
-  }
-
-  public void setMinValue(double minValue) {
-    this.minValue = minValue;
-    rangeSlider.setMin(minValue);
-    rangeSlider.setLowValue(minValue);
-    JavaFxUtil.bindTextFieldAndRangeSlide(lowValueTextField, rangeSlider, false);
-  }
-
-  public void setMaxValue(double maxValue) {
-    this.maxValue = maxValue;
-    rangeSlider.setMax(maxValue);
-    rangeSlider.setHighValue(maxValue);
-    JavaFxUtil.bindTextFieldAndRangeSlide(highValueTextField, rangeSlider, true);
-  }
-
-  @Override
-  public boolean hasDefaultValue() {
-    return hasLowDefaultValue() && hasHighDefaultValue();
-  }
-
-  private boolean hasLowDefaultValue() {
-    return rangeSlider.getLowValue() == minValue;
-  }
-
-  private boolean hasHighDefaultValue() {
-    return rangeSlider.getHighValue() == maxValue;
-  }
-
-  @Override
-  public void resetFilter() {
-    rangeSlider.setLowValue(minValue);
-    rangeSlider.setHighValue(maxValue);
+  protected RangeSliderFilterController(I18n i18n) {
+    super(i18n);
   }
 
   public void setText(String text) {
@@ -89,24 +32,19 @@ public class RangeSliderFilterController<T> extends AbstractFilterNodeController
 
   @Override
   public Observable getObservable() {
-    if (pairProperty == null) {
-      pairProperty = Bindings.createObjectBinding(() -> {
+    if (rangeProperty == null) {
+      rangeProperty = Bindings.createObjectBinding(() -> {
             int lowValue = (int) rangeSlider.getLowValue();
             int highValue = (int) rangeSlider.getHighValue();
             return lowValue == minValue && highValue == maxValue ? NO_CHANGE : ImmutablePair.of(lowValue, highValue);
           },
           rangeSlider.lowValueProperty(), rangeSlider.highValueProperty());
     }
-    return pairProperty;
+    return rangeProperty;
   }
 
   @Override
   public ImmutablePair<Integer, Integer> getValue() {
-    return pairProperty.getValue();
-  }
-
-  @Override
-  public Node getRoot() {
-    return root;
+    return rangeProperty.getValue();
   }
 }

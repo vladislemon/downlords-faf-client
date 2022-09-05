@@ -1,7 +1,6 @@
 package com.faforever.client.filter;
 
 import com.faforever.client.theme.UiService;
-import javafx.util.Pair;
 import javafx.util.StringConverter;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -44,13 +43,13 @@ public class FilterBuilder<T> {
     return multiCheckbox(filterName, text, CompletableFuture.completedFuture(items), converter, filter);
   }
 
-  public <U> FilterBuilder<T> multiCheckbox(FilterName filterName, String text, CompletableFuture<List<U>> items, StringConverter<U> converter, BiFunction<List<U>, T, Boolean> filter) {
+  public <U> FilterBuilder<T> multiCheckbox(FilterName filterName, String text, CompletableFuture<List<U>> future, StringConverter<U> converter, BiFunction<List<U>, T, Boolean> filter) {
     FilterMultiCheckboxController<U, T> controller = uiService.loadFxml("theme/filter/multicheckbox_filter.fxml");
     controller.setFilterName(filterName);
     controller.setText(text);
     controller.setConverter(converter);
-    items.thenAccept(items1 -> {
-      controller.setItems(items1);
+    future.thenAccept(items -> {
+      controller.setItems(items);
       controller.registerListener(filter);
     });
     controllers.add(controller);
@@ -58,12 +57,27 @@ public class FilterBuilder<T> {
   }
 
   public FilterBuilder<T> rangeSlider(FilterName filterName, String text, double minValue, double maxValue, BiFunction<ImmutablePair<Integer, Integer>, T, Boolean> filter) {
-    RangeSliderFilterController<T> controller = uiService.loadFxml("theme/filter/range_slider_filter.fxml");
+    RangeSliderFilterController<T> controller = uiService.loadFxml("theme/filter/range_slider_filter.fxml", RangeSliderFilterController.class);
     controller.setFilterName(filterName);
     controller.setText(text);
     controller.setMinValue(minValue);
     controller.setMaxValue(maxValue);
     controller.registerListener(filter);
+    controllers.add(controller);
+    return this;
+  }
+
+  public <I> FilterBuilder<T> rangeSliderWithCombobox(FilterName filterName, String text, CompletableFuture<List<I>> future, StringConverter<I> converter, double minValue, double maxValue, BiFunction<ImmutablePair<I, ImmutablePair<Integer, Integer>>, T, Boolean> filter) {
+    RangeSliderWithChoiceFilterController<I, T> controller = uiService.loadFxml("theme/filter/range_slider_filter.fxml", RangeSliderWithChoiceFilterController.class);
+    controller.setFilterName(filterName);
+    controller.setText(text);
+    controller.setMinValue(minValue);
+    controller.setMaxValue(maxValue);
+    controller.setConverter(converter);
+    future.thenAccept(items -> {
+      controller.setItems(items);
+      controller.registerListener(filter);
+    });
     controllers.add(controller);
     return this;
   }

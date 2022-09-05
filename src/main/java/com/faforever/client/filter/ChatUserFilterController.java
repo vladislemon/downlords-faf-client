@@ -2,9 +2,11 @@ package com.faforever.client.filter;
 
 import com.faforever.client.chat.ChatChannelUser;
 import com.faforever.client.chat.ListItem;
+import com.faforever.client.domain.LeaderboardBean;
 import com.faforever.client.domain.PlayerBean;
 import com.faforever.client.game.PlayerStatus;
 import com.faforever.client.i18n.I18n;
+import com.faforever.client.leaderboard.LeaderboardService;
 import com.faforever.client.player.CountryFlagService;
 import com.faforever.client.player.CountryFlagService.Country;
 import com.faforever.client.theme.UiService;
@@ -12,6 +14,7 @@ import com.faforever.client.util.RatingUtil;
 import javafx.util.StringConverter;
 import org.apache.commons.lang3.Range;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
@@ -26,9 +29,10 @@ import static com.faforever.client.filter.FilterName.*;
 public class ChatUserFilterController extends AbstractFilterController<ListItem> {
 
   private final CountryFlagService countryFlagService;
+  private final LeaderboardService leaderboardService;
 
   private final static int MIN_RATING = -1000;
-  private final static int MAX_RATING = 3000;
+  private final static int MAX_RATING = 4000;
 
   private final StringConverter<PlayerStatus> playerStatusConverter = new StringConverter<>() {
     @Override
@@ -54,9 +58,23 @@ public class ChatUserFilterController extends AbstractFilterController<ListItem>
     }
   };
 
-  protected ChatUserFilterController(UiService uiService, I18n i18n, CountryFlagService countryFlagService) {
+  private final StringConverter<LeaderboardBean> leaderboardConverter = new StringConverter<>() {
+    @Override
+    public String toString(LeaderboardBean object) {
+      String rating = i18n.getOrDefault(object.getTechnicalName(), object.getNameKey());
+      return i18n.get("leaderboard.rating", rating);
+    }
+
+    @Override
+    public LeaderboardBean fromString(String string) {
+      throw new UnsupportedOperationException("Not supported");
+    }
+  };
+
+  protected ChatUserFilterController(UiService uiService, I18n i18n, CountryFlagService countryFlagService, LeaderboardService leaderboardService) {
     super(uiService, i18n);
     this.countryFlagService = countryFlagService;
+    this.leaderboardService = leaderboardService;
   }
 
   @Override
@@ -81,15 +99,18 @@ public class ChatUserFilterController extends AbstractFilterController<ListItem>
                     .stream()
                     .anyMatch(selectedStatus::contains))
 
-        .rangeSlider(PLAYER_RATING, i18n.get("game.globalRating"), MIN_RATING, MAX_RATING,
-            (pair, item) -> item.isCategory() || pair == RangeSliderFilterController.NO_CHANGE ||
+        .rangeSliderWithCombobox(PLAYER_RATING, i18n.get("game.rating"), leaderboardService.getLeaderboards(), leaderboardConverter, MIN_RATING, MAX_RATING,
+            (ratingWithPair, item) -> item.isCategory() || ratingWithPair.getRight() == AbstractRangeSliderFilterController.NO_CHANGE ||
                 item.getUser()
-                    .map(ChatChannelUser::getPlayer)
-                    .filter(Optional::isPresent)
-                    .map(Optional::get)
-                    .map(player -> RatingUtil.getRating(player.getLeaderboardRatings().get("global")))
+                    .flatMap(ChatChannelUser::getPlayer)
+                    .map(PlayerBean::getLeaderboardRatings)
+                    .map(ratingMap -> ratingMap.get(ratingWithPair.getLeft().getTechnicalName()))
+                    .map(RatingUtil::getRating)
                     .stream()
-                    .anyMatch(rating -> Range.between(pair.getLeft(), pair.getRight()).contains(rating)))
+                    .anyMatch(rating -> {
+                      ImmutablePair<Integer, Integer> ratingRange = ratingWithPair.getRight();
+                      return Range.between(ratingRange.getLeft(), ratingRange.getRight()).contains(rating);
+                    }))
 
         .multiCheckbox(COUNTRY_CODE, i18n.get("country"), countryFlagService.getCountries(), countryConverter,
             (countries, item) -> item.isCategory() || countries.isEmpty() ||
