@@ -16,13 +16,9 @@ import com.faforever.client.notification.Severity;
 import com.faforever.client.theme.UiService;
 import com.faforever.client.ui.StageHolder;
 import com.faforever.client.ui.taskbar.WindowsTaskbarProgressUpdater;
-import com.faforever.client.util.WindowsUtil;
 import de.codecentric.centerdevice.javafxsvg.SvgImageLoaderFactory;
 import javafx.application.Application;
 import javafx.application.Platform;
-import javafx.scene.control.Alert;
-import javafx.scene.control.Alert.AlertType;
-import javafx.scene.control.ButtonType;
 import javafx.scene.text.Font;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
@@ -40,9 +36,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map.Entry;
-import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.CountDownLatch;
 import java.util.stream.Collectors;
 
 @Configuration
@@ -61,7 +55,6 @@ public class FafClientApplication extends Application {
   public static final String PROFILE_WINDOWS = "windows";
   public static final String PROFILE_LINUX = "linux";
   public static final String PROFILE_MAC = "mac";
-  public static final int EXIT_STATUS_RAN_AS_ADMIN = 3;
 
   private ConfigurableApplicationContext applicationContext;
 
@@ -85,19 +78,6 @@ public class FafClientApplication extends Application {
 
   @Override
   public void init() throws InterruptedException, NoSuchFieldException, IllegalAccessException {
-    if (org.bridj.Platform.isWindows() && WindowsUtil.isAdmin()) {
-      CountDownLatch waitForUserInput = new CountDownLatch(1);
-      JavaFxUtil.runLater(() -> {
-        Alert alert = new Alert(AlertType.WARNING, "Please don't run the client as admin. Because if you do you might need to delete C:\\ProgramData\\FAForever to be able to run it as a normal user again. Do you want to ignore the warning and continue?", ButtonType.YES, ButtonType.NO);
-        Optional<ButtonType> buttonType = alert.showAndWait();
-        if (buttonType.filter(button -> button == ButtonType.NO).isPresent()) {
-          System.exit(EXIT_STATUS_RAN_AS_ADMIN);
-        }
-        waitForUserInput.countDown();
-      });
-      waitForUserInput.await();
-    }
-
     SvgImageLoaderFactory.install();
     Font.loadFont(FafClientApplication.class.getResourceAsStream("/font/dfc-icons.ttf"), 10);
     JavaFxUtil.fixTooltipDuration();
